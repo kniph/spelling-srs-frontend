@@ -1,0 +1,28 @@
+{
+  "name": "spelling-srs-frontend",
+  "version": "1.0.0",
+  "description": "SRS 中文單字學習系統 - 前端 (Spaced Repetition System for Chinese Vocabulary Learning - Frontend)",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server . -p 3000 -c-1",
+    "build": "echo 'Static files ready for deployment'",
+    "preview": "npx http-server . -p 4173"
+  },
+  "keywords": [
+    "SRS",
+    "spaced-repetition",
+    "chinese-learning",
+    "vocabulary",
+    "education"
+  ],
+  "author": "kniph",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kniph/spelling-srs-frontend.git"
+  },
+  "homepage": "https://spelling-srs.netlify.app"
+}

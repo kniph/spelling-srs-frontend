@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>機構管理 - SRS 學習系統</title>
+  
+  <!-- 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- 共用樣式 -->
+  <link rel="stylesheet" href="/shared/css/common.css">
+  
+  <!-- 頁面專用樣式 -->
+  <style>
+    /* 機構管理頁面樣式 */
+    .organizations-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-xl);
+      flex-wrap: wrap;
+      gap: var(--spacing-md);
+    }
+
+    .organizations-filters {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .organizations-search {
+      min-width: 300px;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: var(--font-size-sm);
+    }
+
+    .organizations-filter-select {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: var(--font-size-sm);
+      min-width: 120px;
+    }
+
+    /* 機構表格 */
+    .organizations-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      border-radius: var(--radius-large);
+      overflow: hidden;
+      box-shadow: var(--shadow-light);
+    }
+
+    .organizations-table th,
+    .organizations-table td {
+      padding: var(--spacing-md);
+      text-align: left;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .organizations-table th {
+      background: var(--gray-50);
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: var(--font-size-sm);
+    }
+
+    .organizations-table tr:hover {
+      background: var(--gray-50);
+    }
+
+    .organizations-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* 機構資訊顯示 */
+    .org-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .org-code {
+      font-size: var(--font-size-xs);
+      color: var(--text-secondary);
+      background: var(--gray-100);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius);
+      display: inline-block;
+    }
+
+    .org-contact {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    .org-stats {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      font-size: var(--font-size-xs);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius);
+      background: var(--gray-100);
+      color: var(--text-secondary);
+    }
+
+    .stat-item.has-users {
+      background: rgba(67, 233, 123, 0.1);
+      color: var(--success);
+    }
+
+    /* 狀態標籤 */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius);
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      gap: var(--spacing-xs);
+    }
+
+    .status-badge.active {
+      background: rgba(67, 233, 123, 0.1);
+      color: var(--success);
+    }
+
+    .status-badge.inactive {
+      background: rgba(255, 82, 82, 0.1);
+      color: var(--error);
+    }
+
+    /* 動作按鈕 */
+    .action-buttons {
+      display: flex;
+      gap: var(--spacing-xs);
+    }
+
+    .btn-icon {
+      padding: var(--spacing-xs);
+      min-width: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 模態框樣式 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--white);
+      border-radius: var(--radius-large);
+      box-shadow: var(--shadow-heavy);
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: var(--spacing-xl);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: var(--font-size-xl);
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: var(--spacing-xs);
+    }
+
+    .modal-body {
+      padding: var(--spacing-xl);
+    }
+
+    .modal-footer {
+      padding: var(--spacing-xl);
+      border-top: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--spacing-md);
+    }
+
+    /* 表單樣式 */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .form-row.full-width {
+      grid-template-columns: 1fr;
+    }
+
+    /* 分頁樣式 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-xl);
+    }
+
+    .pagination-btn {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      color: var(--text-secondary);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      transition: var(--transition);
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background: var(--gray-50);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination-btn.active {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+
+    .pagination-info {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    /* 載入狀態 */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-2xl);
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--gray-300);
+      border-top: 3px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: var(--spacing-md);
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* 響應式設計 */
+    @media (max-width: 768px) {
+      .organizations-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .organizations-filters {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .organizations-search,
+      .organizations-filter-select {
+        min-width: auto;
+      }
+      
+      .organizations-table {
+        font-size: var(--font-size-sm);
+      }
+      
+      .organizations-table th,
+      .organizations-table td {
+        padding: var(--spacing-sm);
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+      }
+      
+      .modal-content {
+        width: 95%;
+        margin: var(--spacing-md);
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .org-stats {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 頁面內容將由JavaScript動態生成 -->
+
+
+  <!-- 配置文件 -->
+  <script src="../shared/js/config.js"></script>
+  
+  <!-- 共用腳本 -->
+  <script src="/shared/js/common.js"></script>
+  <script src="/shared/components/navigation.js"></script>
+  
+  <!-- 頁面專用腳本 -->
+  <script>
+    // 機構管理狀態
+    let currentOrganizationsPage = 1;
+    let currentOrganizationsFilters = {
+      search: '',
+      status: ''
+    };
+    let editingOrganizationId = null;
+
+    /**
+     * 載入機構列表
+     */
+    async function loadOrganizations(page = 1) {
+      const container = document.getElementById('organizations-table-container');
+      const search = document.getElementById('org-search')?.value || '';
+      const status = document.getElementById('org-status-filter')?.value || '';
+
+      // 更新當前狀態
+      currentOrganizationsPage = page;
+      currentOrganizationsFilters = { search, status };
+
+      // 顯示載入狀態
+      showLoading(container);
+
+      try {
+        const params = new URLSearchParams();
+        params.append('page', page);
+        params.append('limit', 20);
+        if (search) params.append('search', search);
+        if (status) params.append('is_active', status);
+
+        const response = await apiRequest(`/api/admin/organizations?${params}`);
+
+        if (response && response.ok) {
+          const data = await response.json();
+          renderOrganizationsTable(data.organizations, data.pagination);
+        } else {
+          throw new Error('載入機構列表失敗');
+        }
+      } catch (error) {
+        console.error('載入機構列表錯誤:', error);
+        container.innerHTML = `
+          <div class="alert alert-error" style="text-align: center; padding: 2rem;">
+            載入機構列表時發生錯誤: ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * 渲染機構表格
+     */
+    function renderOrganizationsTable(organizations, pagination) {
+      const container = document.getElementById('organizations-table-container');
+      
+      if (!organizations || organizations.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+            沒有找到符合條件的機構
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <table class="organizations-table">
+          <thead>
+            <tr>
+              <th>機構資訊</th>
+              <th>聯絡資訊</th>
+              <th>使用者統計</th>
+              <th>狀態</th>
+              <th>建立時間</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      organizations.forEach(org => {
+        const statusClass = org.is_active ? 'active' : 'inactive';
+        const statusText = org.is_active ? '啟用' : '停用';
+        const createdDate = new Date(org.created_at).toLocaleDateString('zh-TW');
+        
+        // 使用者統計
+        const userStats = org.user_stats || {};
+        const totalUsers = Object.values(userStats).reduce((sum, count) => sum + (count || 0), 0);
+        
+        html += `
+          <tr>
+            <td>
+              <div class="org-name">${org.name}</div>
+              <div class="org-code">${org.code}</div>
+              ${org.address ? `<div style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-top: var(--spacing-xs);">${org.address}</div>` : ''}
+            </td>
+            <td>
+              <div class="org-contact">
+                ${org.contact_person ? `<div><strong>聯絡人:</strong> ${org.contact_person}</div>` : ''}
+                ${org.phone ? `<div><strong>電話:</strong> ${org.phone}</div>` : ''}
+                ${org.email ? `<div><strong>信箱:</strong> ${org.email}</div>` : ''}
+                ${!org.contact_person && !org.phone && !org.email ? '<span style="color: var(--text-secondary);">無聯絡資訊</span>' : ''}
+              </div>
+            </td>
+            <td>
+              <div class="org-stats">
+                ${Object.keys(userStats).length > 0 ? 
+                  Object.entries(userStats).map(([role, count]) => {
+                    const roleNames = {
+                      'super_admin': '超管',
+                      'branch_admin': '主任',
+                      'teacher': '教師',
+                      'student': '學生'
+                    };
+                    return `<span class="stat-item has-users">${roleNames[role] || role}: ${count}</span>`;
+                  }).join('') + `<span class="stat-item">總計: ${totalUsers}</span>` :
+                  '<span class="stat-item">無使用者</span>'
+                }
+              </div>
+            </td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td>${createdDate}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-primary" onclick="editOrganization(${org.id})">編輯</button>
+                ${org.is_active ? 
+                  `<button class="btn btn-sm btn-warning" onclick="toggleOrganizationStatus(${org.id}, false)">停用</button>` :
+                  `<button class="btn btn-sm btn-success" onclick="toggleOrganizationStatus(${org.id}, true)">啟用</button>`
+                }
+                <button class="btn btn-sm btn-secondary" onclick="deleteOrganization(${org.id})">軟刪除</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteOrganizationPermanently(${org.id})">刪除</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      // 添加分頁
+      if (pagination && pagination.total_pages > 1) {
+        html += renderPagination(pagination);
+      }
+
+      container.innerHTML = html;
+    }
+
+    /**
+     * 渲染分頁
+     */
+    function renderPagination(pagination) {
+      const { current_page, total_pages, total } = pagination;
+      let html = `
+        <div class="pagination">
+          <button class="pagination-btn" ${current_page <= 1 ? 'disabled' : ''} onclick="loadOrganizations(${current_page - 1})">
+            上一頁
+          </button>
+      `;
+
+      // 頁碼按鈕
+      for (let i = Math.max(1, current_page - 2); i <= Math.min(total_pages, current_page + 2); i++) {
+        html += `
+          <button class="pagination-btn ${i === current_page ? 'active' : ''}" onclick="loadOrganizations(${i})">
+            ${i}
+          </button>
+        `;
+      }
+
+      html += `
+          <button class="pagination-btn" ${current_page >= total_pages ? 'disabled' : ''} onclick="loadOrganizations(${current_page + 1})">
+            下一頁
+          </button>
+          <span class="pagination-info">共 ${total} 筆記錄</span>
+        </div>
+      `;
+
+      return html;
+    }
+
+    /**
+     * 顯示新增機構模態框
+     */
+    window.showCreateOrgModal = function() {
+      editingOrganizationId = null;
+      document.getElementById('orgModalTitle').textContent = '新增機構';
+      document.getElementById('orgForm').reset();
+      document.getElementById('orgModal').classList.add('show');
+    }
+
+    /**
+     * 編輯機構
+     */
+    window.editOrganization = async function(orgId) {
+      editingOrganizationId = orgId;
+      document.getElementById('orgModalTitle').textContent = '編輯機構';
+      
+      try {
+        const response = await apiRequest(`/api/admin/organizations/${orgId}`);
+        
+        if (response && response.ok) {
+          const data = await response.json();
+          const org = data.organization;
+          
+          document.getElementById('orgName').value = org.name || '';
+          document.getElementById('orgCode').value = org.code || '';
+          document.getElementById('orgAddress').value = org.address || '';
+          document.getElementById('orgPhone').value = org.phone || '';
+          document.getElementById('orgEmail').value = org.email || '';
+          document.getElementById('orgContactPerson').value = org.contact_person || '';
+          
+          document.getElementById('orgModal').classList.add('show');
+        } else {
+          throw new Error('載入機構資料失敗');
+        }
+      } catch (error) {
+        console.error('載入機構資料錯誤:', error);
+        showAlert('載入機構資料時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 關閉機構模態框
+     */
+    window.closeOrgModal = function() {
+      document.getElementById('orgModal').classList.remove('show');
+      editingOrganizationId = null;
+    }
+
+    /**
+     * 儲存機構
+     */
+    window.saveOrganization = async function() {
+      const formData = {
+        name: document.getElementById('orgName').value.trim(),
+        code: document.getElementById('orgCode').value.trim(),
+        address: document.getElementById('orgAddress').value.trim(),
+        phone: document.getElementById('orgPhone').value.trim(),
+        email: document.getElementById('orgEmail').value.trim(),
+        contact_person: document.getElementById('orgContactPerson').value.trim()
+      };
+
+      // 驗證必填欄位
+      if (!formData.name || !formData.code) {
+        showAlert('請填寫機構名稱和代碼', 'error');
+        return;
+      }
+
+      try {
+        const url = editingOrganizationId ? 
+          `/api/admin/organizations/${editingOrganizationId}` : 
+          '/api/admin/organizations';
+        
+        const method = editingOrganizationId ? 'PUT' : 'POST';
+        
+        const response = await apiRequest(url, {
+          method: method,
+          body: JSON.stringify(formData)
+        });
+
+        if (response && response.ok) {
+          showAlert(editingOrganizationId ? '機構已更新' : '機構已新增', 'success');
+          closeOrgModal();
+          loadOrganizations(currentOrganizationsPage);
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '儲存失敗');
+        }
+      } catch (error) {
+        console.error('儲存機構錯誤:', error);
+        showAlert('儲存機構時發生錯誤: ' + error.message, 'error');
+      }
+    }
+
+    /**
+     * 切換機構狀態
+     */
+    window.toggleOrganizationStatus = async function(orgId, isActive) {
+      try {
+        const response = await apiRequest(`/api/admin/organizations/${orgId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ is_active: isActive })
+        });
+
+        if (response && response.ok) {
+          showAlert(`機構已${isActive ? '啟用' : '停用'}`, 'success');
+          loadOrganizations(currentOrganizationsPage);
+        } else {
+          throw new Error('狀態更新失敗');
+        }
+      } catch (error) {
+        console.error('切換機構狀態錯誤:', error);
+        showAlert('更新機構狀態時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 刪除機構
+     */
+    window.deleteOrganization = async function(orgId) {
+      if (!confirm('確定要停用這個機構嗎？機構將被停用但資料保留，可以稍後重新啟用。')) {
+        return;
+      }
+
+      try {
+        const response = await apiRequest(`/api/admin/organizations/${orgId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ is_active: false })
+        });
+
+        if (response && response.ok) {
+          showAlert('機構已停用', 'success');
+          loadOrganizations(currentOrganizationsPage);
+        } else {
+          throw new Error('停用失敗');
+        }
+      } catch (error) {
+        console.error('刪除機構錯誤:', error);
+        showAlert('刪除機構時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 硬刪除機構（永久刪除）
+     */
+    window.deleteOrganizationPermanently = async function(orgId) {
+      if (!confirm('⚠️ 警告：確定要永久刪除這個機構嗎？\n\n此操作會：\n• 完全移除機構記錄\n• 刪除機構下所有相關資料\n• 無法恢復任何資料\n\n請再次確認是否繼續？')) {
+        return;
+      }
+
+      // 二次確認
+      if (!confirm('最後確認：真的要永久刪除這個機構嗎？此操作無法撤銷！')) {
+        return;
+      }
+
+      try {
+        const response = await apiRequest(`/api/admin/organizations/${orgId}/permanent`, {
+          method: 'DELETE'
+        });
+        
+        if (response && response.ok) {
+          showAlert('機構已永久刪除', 'success');
+          loadOrganizations(currentOrganizationsPage);
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '永久刪除機構失敗');
+        }
+      } catch (error) {
+        console.error('永久刪除機構錯誤:', error);
+        showAlert('永久刪除機構時發生錯誤：' + error.message, 'error');
+      }
+    }
+
+    /**
+     * 設置搜索和篩選
+     */
+    function setupOrganizationsFilters() {
+      const searchInput = document.getElementById('org-search');
+      const statusFilter = document.getElementById('org-status-filter');
+
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(() => {
+          loadOrganizations(1);
+        }, 500));
+      }
+
+      if (statusFilter) {
+        statusFilter.addEventListener('change', () => {
+          loadOrganizations(1);
+        });
+      }
+    }
+
+    /**
+     * 初始化機構管理頁面
+     */
+    function initializeOrganizations() {
+      const contentArea = initializeNavigation('organizations', '機構管理');
+      
+      // 確保全域函數已經定義，防止onclick綁定問題
+      const requiredFunctions = [
+        'showCreateOrgModal', 'editOrganization', 'saveOrganization', 'closeOrgModal',
+        'toggleOrganizationStatus', 'deleteOrganization', 'deleteOrganizationPermanently'
+      ];
+      
+      requiredFunctions.forEach(funcName => {
+        if (typeof window[funcName] !== 'function') {
+          console.error(`${funcName} function not defined on window object`);
+        }
+      });
+      
+      contentArea.innerHTML = `
+        <div class="organizations-controls">
+          <div class="organizations-filters">
+            <input type="text" id="org-search" class="organizations-search" placeholder="搜尋機構名稱、代碼或聯絡人...">
+            <select id="org-status-filter" class="organizations-filter-select">
+              <option value="">所有狀態</option>
+              <option value="true">啟用</option>
+              <option value="false">停用</option>
+            </select>
+            <button class="btn btn-secondary" onclick="loadOrganizations(1)">搜尋</button>
+          </div>
+          
+          <div>
+            <button class="btn btn-primary" onclick="showCreateOrgModal()">新增機構</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div id="organizations-table-container">
+              <div class="loading">
+                <div class="spinner"></div>
+                載入機構列表中...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 新增/編輯機構模態框 -->
+        <div id="orgModal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title" id="orgModalTitle">新增機構</h3>
+              <button type="button" class="modal-close" onclick="closeOrgModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <form id="orgForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">機構名稱 <span style="color: var(--error);">*</span></label>
+                    <input type="text" id="orgName" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">機構代碼 <span style="color: var(--error);">*</span></label>
+                    <input type="text" id="orgCode" class="form-input" required>
+                  </div>
+                </div>
+                
+                <div class="form-row full-width">
+                  <div class="form-group">
+                    <label class="form-label">機構地址</label>
+                    <input type="text" id="orgAddress" class="form-input">
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">聯絡電話</label>
+                    <input type="tel" id="orgPhone" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">聯絡信箱</label>
+                    <input type="email" id="orgEmail" class="form-input">
+                  </div>
+                </div>
+                
+                <div class="form-row full-width">
+                  <div class="form-group">
+                    <label class="form-label">聯絡人</label>
+                    <input type="text" id="orgContactPerson" class="form-input">
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="closeOrgModal()">取消</button>
+              <button type="button" class="btn btn-primary" onclick="saveOrganization()">儲存</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // 設置篩選器和載入數據
+      setupOrganizationsFilters();
+      loadOrganizations(1);
+      
+      // 測試新增機構按鈕綁定
+      setTimeout(() => {
+        const createBtn = document.querySelector('button[onclick="showCreateOrgModal()"]');
+        if (createBtn) {
+          console.log('新增機構按鈕找到了，函數類型:', typeof window.showCreateOrgModal);
+          // 嘗試手動綁定事件作為備用方案
+          createBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof window.showCreateOrgModal === 'function') {
+              window.showCreateOrgModal();
+            } else {
+              console.error('showCreateOrgModal function not available');
+            }
+          });
+        } else {
+          console.error('新增機構按鈕未找到');
+        }
+      }, 500);
+      
+      // 修復登出按鈕事件綁定
+      setTimeout(() => {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', function() {
+            if (typeof logout === 'function') {
+              logout();
+            } else {
+              localStorage.removeItem('admin_token');
+              window.location.href = '/admin.html';
+            }
+          });
+        }
+      }, 200);
+    }
+
+    // 頁面載入完成後初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 檢查認證狀態
+      if (!isAuthenticated()) {
+        redirectToLogin();
+        return;
+      }
+      
+      setTimeout(initializeOrganizations, 100);
+    });
+  </script>
+</body>
+</html>

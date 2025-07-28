@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>班級管理 - SRS 學習系統</title>
+  
+  <!-- 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- 共用樣式 -->
+  <link rel="stylesheet" href="/shared/css/common.css">
+  
+  <!-- 頁面專用樣式 -->
+  <style>
+    /* 班級管理頁面樣式 */
+    .classes-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-xl);
+      flex-wrap: wrap;
+      gap: var(--spacing-md);
+    }
+
+    .classes-filters {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .classes-search {
+      min-width: 250px;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: var(--font-size-sm);
+    }
+
+    .classes-filter-select {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: var(--font-size-sm);
+      min-width: 140px;
+    }
+
+    /* 班級表格 */
+    .classes-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      border-radius: var(--radius-large);
+      overflow: hidden;
+      box-shadow: var(--shadow-light);
+    }
+
+    .classes-table th,
+    .classes-table td {
+      padding: var(--spacing-md);
+      text-align: left;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .classes-table th {
+      background: var(--gray-50);
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: var(--font-size-sm);
+    }
+
+    .classes-table tr:hover {
+      background: var(--gray-50);
+    }
+
+    .classes-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* 班級資訊顯示 */
+    .class-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .class-code {
+      font-size: var(--font-size-xs);
+      color: var(--text-secondary);
+      background: var(--gray-100);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius);
+      display: inline-block;
+    }
+
+    .class-description {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+      margin-top: var(--spacing-xs);
+    }
+
+    .teacher-info {
+      font-size: var(--font-size-sm);
+    }
+
+    .teacher-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .teacher-username {
+      color: var(--text-secondary);
+    }
+
+    .student-stats {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+    }
+
+    .student-count {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .student-progress {
+      width: 100%;
+      height: 6px;
+      background: var(--gray-200);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .student-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--success), var(--primary));
+      transition: width 0.3s ease;
+    }
+
+    .capacity-text {
+      font-size: var(--font-size-xs);
+      color: var(--text-secondary);
+    }
+
+    /* 狀態標籤 */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius);
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      gap: var(--spacing-xs);
+    }
+
+    .status-badge.active {
+      background: rgba(67, 233, 123, 0.1);
+      color: var(--success);
+    }
+
+    .status-badge.inactive {
+      background: rgba(255, 82, 82, 0.1);
+      color: var(--error);
+    }
+
+    /* 動作按鈕 */
+    .action-buttons {
+      display: flex;
+      gap: var(--spacing-xs);
+    }
+
+    .btn-icon {
+      padding: var(--spacing-xs);
+      min-width: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 模態框樣式 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--white);
+      border-radius: var(--radius-large);
+      box-shadow: var(--shadow-heavy);
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: var(--spacing-xl);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: var(--font-size-xl);
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: var(--spacing-xs);
+    }
+
+    .modal-body {
+      padding: var(--spacing-xl);
+    }
+
+    .modal-footer {
+      padding: var(--spacing-xl);
+      border-top: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--spacing-md);
+    }
+
+    /* 表單樣式 */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .form-row.full-width {
+      grid-template-columns: 1fr;
+    }
+
+    /* 分頁樣式 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-xl);
+    }
+
+    .pagination-btn {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      color: var(--text-secondary);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      transition: var(--transition);
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background: var(--gray-50);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination-btn.active {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+
+    .pagination-info {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    /* 載入狀態 */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-2xl);
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--gray-300);
+      border-top: 3px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: var(--spacing-md);
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* 響應式設計 */
+    @media (max-width: 768px) {
+      .classes-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .classes-filters {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .classes-search,
+      .classes-filter-select {
+        min-width: auto;
+      }
+      
+      .classes-table {
+        font-size: var(--font-size-sm);
+      }
+      
+      .classes-table th,
+      .classes-table td {
+        padding: var(--spacing-sm);
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+      }
+      
+      .modal-content {
+        width: 95%;
+        margin: var(--spacing-md);
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 頁面內容將由JavaScript動態生成 -->
+
+
+  <!-- 配置文件 -->
+  <script src="../shared/js/config.js"></script>
+  
+  <!-- 共用腳本 -->
+  <script src="/shared/js/common.js"></script>
+  <script src="/shared/components/navigation.js"></script>
+  
+  <!-- 頁面專用腳本 -->
+  <script>
+    // 班級管理狀態
+    let currentClassesPage = 1;
+    let currentClassesFilters = {
+      search: '',
+      organization: '',
+      status: ''
+    };
+    let editingClassId = null;
+
+    /**
+     * 載入班級列表
+     */
+    async function loadClasses(page = 1) {
+      const container = document.getElementById('classes-table-container');
+      const search = document.getElementById('class-search')?.value || '';
+      const organization = document.getElementById('class-organization-filter')?.value || '';
+      const status = document.getElementById('class-status-filter')?.value || '';
+
+      // 更新當前狀態
+      currentClassesPage = page;
+      currentClassesFilters = { search, organization, status };
+
+      // 顯示載入狀態
+      showLoading(container);
+
+      try {
+        const params = new URLSearchParams();
+        params.append('page', page);
+        params.append('limit', 20);
+        if (search) params.append('search', search);
+        if (organization) params.append('organization_id', organization);
+        if (status) params.append('is_active', status);
+
+        const response = await apiRequest(`/api/admin/classes?${params}`);
+
+        if (response && response.ok) {
+          const data = await response.json();
+          renderClassesTable(data.classes, data.pagination);
+        } else {
+          throw new Error('載入班級列表失敗');
+        }
+      } catch (error) {
+        console.error('載入班級列表錯誤:', error);
+        container.innerHTML = `
+          <div class="alert alert-error" style="text-align: center; padding: 2rem;">
+            載入班級列表時發生錯誤: ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * 渲染班級表格
+     */
+    function renderClassesTable(classes, pagination) {
+      const container = document.getElementById('classes-table-container');
+      
+      if (!classes || classes.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+            沒有找到符合條件的班級
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <table class="classes-table">
+          <thead>
+            <tr>
+              <th>班級資訊</th>
+              <th>機構</th>
+              <th>指導教師</th>
+              <th>學生人數</th>
+              <th>狀態</th>
+              <th>建立時間</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      classes.forEach(cls => {
+        const statusClass = cls.is_active ? 'active' : 'inactive';
+        const statusText = cls.is_active ? '啟用' : '停用';
+        const createdDate = new Date(cls.created_at).toLocaleDateString('zh-TW');
+        const progressPercentage = cls.max_students > 0 ? Math.round((cls.student_count / cls.max_students) * 100) : 0;
+        
+        html += `
+          <tr>
+            <td>
+              <div class="class-name">${cls.name}</div>
+              <div class="class-code">${cls.code}</div>
+              ${cls.description ? `<div class="class-description">${cls.description}</div>` : ''}
+            </td>
+            <td>${cls.organization_name || '-'}</td>
+            <td>
+              <div class="teacher-info">
+                ${cls.teacher_name ? 
+                  `<div class="teacher-name">${cls.teacher_name}</div>
+                   <div class="teacher-username">@${cls.teacher_username}</div>` :
+                  '<span style="color: var(--text-secondary);">未指派教師</span>'
+                }
+              </div>
+            </td>
+            <td>
+              <div class="student-stats">
+                <div class="student-count">${cls.student_count} / ${cls.max_students}</div>
+                <div class="student-progress">
+                  <div class="student-progress-fill" style="width: ${progressPercentage}%"></div>
+                </div>
+                <div class="capacity-text">${progressPercentage}% 滿班</div>
+              </div>
+            </td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td>${createdDate}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-primary" onclick="editClass(${cls.id})">編輯</button>
+                ${cls.is_active ? 
+                  `<button class="btn btn-sm btn-warning" onclick="toggleClassStatus(${cls.id}, false)">停用</button>` :
+                  `<button class="btn btn-sm btn-success" onclick="toggleClassStatus(${cls.id}, true)">啟用</button>`
+                }
+                <button class="btn btn-sm btn-secondary" onclick="deleteClass(${cls.id})">軟刪除</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteClassPermanently(${cls.id})">刪除</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      // 添加分頁
+      if (pagination && pagination.total_pages > 1) {
+        html += renderPagination(pagination);
+      }
+
+      container.innerHTML = html;
+    }
+
+    /**
+     * 渲染分頁
+     */
+    function renderPagination(pagination) {
+      const { current_page, total_pages, total } = pagination;
+      let html = `
+        <div class="pagination">
+          <button class="pagination-btn" ${current_page <= 1 ? 'disabled' : ''} onclick="loadClasses(${current_page - 1})">
+            上一頁
+          </button>
+      `;
+
+      // 頁碼按鈕
+      for (let i = Math.max(1, current_page - 2); i <= Math.min(total_pages, current_page + 2); i++) {
+        html += `
+          <button class="pagination-btn ${i === current_page ? 'active' : ''}" onclick="loadClasses(${i})">
+            ${i}
+          </button>
+        `;
+      }
+
+      html += `
+          <button class="pagination-btn" ${current_page >= total_pages ? 'disabled' : ''} onclick="loadClasses(${current_page + 1})">
+            下一頁
+          </button>
+          <span class="pagination-info">共 ${total} 筆記錄</span>
+        </div>
+      `;
+
+      return html;
+    }
+
+    /**
+     * 顯示新增班級模態框
+     */
+    window.showCreateClassModal = function() {
+      editingClassId = null;
+      document.getElementById('classModalTitle').textContent = '新增班級';
+      document.getElementById('classForm').reset();
+      document.getElementById('classMaxStudents').value = 30;
+      document.getElementById('classStatus').value = 1;
+      loadOrganizationOptions();
+      loadTeacherOptions();
+      document.getElementById('classModal').classList.add('show');
+    }
+
+    /**
+     * 編輯班級
+     */
+    window.editClass = async function(classId) {
+      editingClassId = classId;
+      document.getElementById('classModalTitle').textContent = '編輯班級';
+      
+      try {
+        const response = await apiRequest(`/api/admin/classes/${classId}`);
+        
+        if (response && response.ok) {
+          const data = await response.json();
+          const cls = data.class;
+          
+          document.getElementById('className').value = cls.name || '';
+          document.getElementById('classCode').value = cls.code || '';
+          document.getElementById('classDescription').value = cls.description || '';
+          document.getElementById('classMaxStudents').value = cls.max_students || 30;
+          document.getElementById('classStatus').value = cls.is_active ? 1 : 0;
+          
+          // 載入選項並設置值
+          await loadOrganizationOptions();
+          await loadTeacherOptions();
+          
+          if (cls.organization_id) {
+            document.getElementById('classOrganization').value = cls.organization_id;
+          }
+          if (cls.teacher_id) {
+            document.getElementById('classTeacher').value = cls.teacher_id;
+          }
+          
+          document.getElementById('classModal').classList.add('show');
+        } else {
+          throw new Error('載入班級資料失敗');
+        }
+      } catch (error) {
+        console.error('載入班級資料錯誤:', error);
+        showAlert('載入班級資料時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 查看班級詳情
+     */
+    window.viewClassDetails = function(classId) {
+      // TODO: 實現班級詳情查看功能
+      showAlert(`查看班級 ID: ${classId} 詳情功能開發中...`, 'info');
+    }
+
+    /**
+     * 關閉班級模態框
+     */
+    window.closeClassModal = function() {
+      document.getElementById('classModal').classList.remove('show');
+      editingClassId = null;
+    }
+
+    /**
+     * 儲存班級
+     */
+    window.saveClass = async function() {
+      const formData = {
+        name: document.getElementById('className').value.trim(),
+        code: document.getElementById('classCode').value.trim(),
+        description: document.getElementById('classDescription').value.trim(),
+        organization_id: parseInt(document.getElementById('classOrganization').value),
+        teacher_id: document.getElementById('classTeacher').value ? parseInt(document.getElementById('classTeacher').value) : null,
+        max_students: parseInt(document.getElementById('classMaxStudents').value) || 30,
+        is_active: parseInt(document.getElementById('classStatus').value)
+      };
+
+      // 驗證必填欄位
+      if (!formData.name || !formData.code || !formData.organization_id) {
+        showAlert('請填寫班級名稱、代碼和選擇機構', 'error');
+        return;
+      }
+
+      try {
+        const url = editingClassId ? 
+          `/api/admin/classes/${editingClassId}` : 
+          '/api/admin/classes';
+        
+        const method = editingClassId ? 'PUT' : 'POST';
+        
+        const response = await apiRequest(url, {
+          method: method,
+          body: JSON.stringify(formData)
+        });
+
+        if (response && response.ok) {
+          showAlert(editingClassId ? '班級已更新' : '班級已新增', 'success');
+          closeClassModal();
+          loadClasses(currentClassesPage);
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '儲存失敗');
+        }
+      } catch (error) {
+        console.error('儲存班級錯誤:', error);
+        showAlert('儲存班級時發生錯誤: ' + error.message, 'error');
+      }
+    }
+
+    /**
+     * 切換班級狀態
+     */
+    async function toggleClassStatus(classId, isActive) {
+      try {
+        const response = await apiRequest(`/api/admin/classes/${classId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ is_active: isActive })
+        });
+
+        if (response && response.ok) {
+          showAlert(`班級已${isActive ? '啟用' : '停用'}`, 'success');
+          loadClasses(currentClassesPage);
+        } else {
+          throw new Error('狀態更新失敗');
+        }
+      } catch (error) {
+        console.error('切換班級狀態錯誤:', error);
+        showAlert('更新班級狀態時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 切換班級狀態
+     */
+    window.toggleClassStatus = async function(classId, isActive) {
+      try {
+        const response = await apiRequest(`/api/admin/classes/${classId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ is_active: isActive })
+        });
+
+        if (response && response.ok) {
+          showAlert(`班級已${isActive ? '啟用' : '停用'}`, 'success');
+          loadClasses(currentClassesPage);
+        } else {
+          throw new Error('狀態更新失敗');
+        }
+      } catch (error) {
+        console.error('切換班級狀態錯誤:', error);
+        showAlert('更新班級狀態時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 刪除班級（軟刪除）
+     */
+    window.deleteClass = async function(classId) {
+      if (!confirm('確定要停用這個班級嗎？班級將被停用但資料保留，可以稍後重新啟用。')) {
+        return;
+      }
+
+      try {
+        const response = await apiRequest(`/api/admin/classes/${classId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ is_active: false })
+        });
+
+        if (response && response.ok) {
+          showAlert('班級已停用', 'success');
+          loadClasses(currentClassesPage);
+        } else {
+          throw new Error('停用失敗');
+        }
+      } catch (error) {
+        console.error('停用班級錯誤:', error);
+        showAlert('停用班級時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 硬刪除班級（永久刪除）
+     */
+    window.deleteClassPermanently = async function(classId) {
+      if (!confirm('⚠️ 警告：確定要永久刪除這個班級嗎？\n\n此操作會：\n• 完全移除班級記錄\n• 刪除班級下所有相關資料\n• 無法恢復任何資料\n\n請再次確認是否繼續？')) {
+        return;
+      }
+
+      // 二次確認
+      if (!confirm('最後確認：真的要永久刪除這個班級嗎？此操作無法撤銷！')) {
+        return;
+      }
+
+      try {
+        const response = await apiRequest(`/api/admin/classes/${classId}/permanent`, {
+          method: 'DELETE'
+        });
+        
+        if (response && response.ok) {
+          showAlert('班級已永久刪除', 'success');
+          loadClasses(currentClassesPage);
+        } else {
+          let errorMessage = '永久刪除班級失敗';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (jsonError) {
+            // 如果無法解析JSON，使用HTTP狀態碼作為錯誤信息
+            errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          }
+          throw new Error(errorMessage);
+        }
+      } catch (error) {
+        console.error('永久刪除班級錯誤:', error);
+        showAlert('永久刪除班級時發生錯誤：' + error.message, 'error');
+      }
+    }
+
+    /**
+     * 載入機構選項
+     */
+    async function loadOrganizationOptions() {
+      try {
+        const response = await apiRequest('/api/admin/organizations?is_active=true');
+        
+        if (response && response.ok) {
+          const data = await response.json();
+          const organizations = data.organizations || [];
+          
+          const selectors = ['classOrganization', 'class-organization-filter'];
+          selectors.forEach(selectorId => {
+            const selector = document.getElementById(selectorId);
+            if (selector) {
+              const isFilter = selectorId.includes('filter');
+              selector.innerHTML = `<option value="">${isFilter ? '所有機構' : '選擇機構'}</option>` + 
+                organizations.map(org => `<option value="${org.id}">${org.name} (${org.code})</option>`).join('');
+            }
+          });
+        }
+      } catch (error) {
+        console.error('載入機構選項失敗:', error);
+      }
+    }
+
+    /**
+     * 載入教師選項
+     */
+    async function loadTeacherOptions() {
+      try {
+        const response = await apiRequest('/api/admin/users?role=teacher&is_active=true');
+        
+        if (response && response.ok) {
+          const data = await response.json();
+          const teachers = data.users || [];
+          
+          const selector = document.getElementById('classTeacher');
+          if (selector) {
+            selector.innerHTML = '<option value="">選擇教師</option>' + 
+              teachers.map(teacher => `<option value="${teacher.id}">${teacher.full_name || teacher.username} (@${teacher.username})</option>`).join('');
+          }
+        }
+      } catch (error) {
+        console.error('載入教師選項失敗:', error);
+      }
+    }
+
+    /**
+     * 設置搜索和篩選
+     */
+    function setupClassesFilters() {
+      const searchInput = document.getElementById('class-search');
+      const orgFilter = document.getElementById('class-organization-filter');
+      const statusFilter = document.getElementById('class-status-filter');
+
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(() => {
+          loadClasses(1);
+        }, 500));
+      }
+
+      if (orgFilter) {
+        orgFilter.addEventListener('change', () => {
+          loadClasses(1);
+        });
+      }
+
+      if (statusFilter) {
+        statusFilter.addEventListener('change', () => {
+          loadClasses(1);
+        });
+      }
+    }
+
+    /**
+     * 初始化班級管理頁面
+     */
+    function initializeClasses() {
+      const contentArea = initializeNavigation('classes', '班級管理');
+      
+      contentArea.innerHTML = `
+        <div class="classes-controls">
+          <div class="classes-filters">
+            <input type="text" id="class-search" class="classes-search" placeholder="搜尋班級名稱、代碼或教師...">
+            <select id="class-organization-filter" class="classes-filter-select">
+              <option value="">所有機構</option>
+            </select>
+            <select id="class-status-filter" class="classes-filter-select">
+              <option value="">所有狀態</option>
+              <option value="true">啟用</option>
+              <option value="false">停用</option>
+            </select>
+            <button class="btn btn-secondary" onclick="loadClasses(1)">搜尋</button>
+          </div>
+          
+          <div>
+            <button class="btn btn-primary" onclick="showCreateClassModal()">新增班級</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div id="classes-table-container">
+              <div class="loading">
+                <div class="spinner"></div>
+                載入班級列表中...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 新增/編輯班級模態框 -->
+        <div id="classModal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title" id="classModalTitle">新增班級</h3>
+              <button type="button" class="modal-close" onclick="closeClassModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <form id="classForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">班級名稱 <span style="color: var(--error);">*</span></label>
+                    <input type="text" id="className" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">班級代碼 <span style="color: var(--error);">*</span></label>
+                    <input type="text" id="classCode" class="form-input" required>
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">所屬機構 <span style="color: var(--error);">*</span></label>
+                    <select id="classOrganization" class="form-input" required>
+                      <option value="">選擇機構</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">指派教師</label>
+                    <select id="classTeacher" class="form-input">
+                      <option value="">選擇教師</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">最大學生數</label>
+                    <input type="number" id="classMaxStudents" class="form-input" min="1" max="100" value="30">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">狀態</label>
+                    <select id="classStatus" class="form-input">
+                      <option value="1">啟用</option>
+                      <option value="0">停用</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-row full-width">
+                  <div class="form-group">
+                    <label class="form-label">班級描述</label>
+                    <textarea id="classDescription" class="form-input" rows="3" placeholder="請輸入班級簡介或備註"></textarea>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="closeClassModal()">取消</button>
+              <button type="button" class="btn btn-primary" onclick="saveClass()">儲存</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // 設置篩選器和載入數據
+      setupClassesFilters();
+      loadOrganizationOptions();
+      loadClasses(1);
+      
+      // 修復登出按鈕事件綁定
+      setTimeout(() => {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', function() {
+            if (typeof logout === 'function') {
+              logout();
+            } else {
+              localStorage.removeItem('admin_token');
+              window.location.href = '/admin.html';
+            }
+          });
+        }
+      }, 200);
+    }
+
+    // 頁面載入完成後初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 檢查認證狀態
+      if (!isAuthenticated()) {
+        redirectToLogin();
+        return;
+      }
+      
+      setTimeout(initializeClasses, 100);
+    });
+  </script>
+</body>
+</html>

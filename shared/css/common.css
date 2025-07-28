@@ -1,0 +1,389 @@
+/* ===========================
+   SRS 學習系統 - 共用樣式
+   ========================== */
+
+:root {
+  /* === 主要色彩系統 === */
+  --primary: #7C4DFF;
+  --primary-dark: #6C63FF;
+  --primary-light: #B39DFF;
+  --secondary: #2196F3;
+  --secondary-dark: #1976D2;
+  --secondary-light: #64B5F6;
+  
+  /* === 語義色彩 === */
+  --success: #43e97b;
+  --success-dark: #38d967;
+  --error: #ff5252;
+  --error-dark: #e53935;
+  --warning: #ff9800;
+  --info: #2196F3;
+  
+  /* === 中性色彩 === */
+  --white: #ffffff;
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #eeeeee;
+  --gray-300: #e0e0e0;
+  --gray-400: #bdbdbd;
+  --gray-500: #9e9e9e;
+  --gray-600: #757575;
+  --gray-700: #616161;
+  --gray-800: #424242;
+  --gray-900: #212121;
+  
+  /* === 文字色彩 === */
+  --text-primary: #212121;
+  --text-secondary: #757575;
+  --text-muted: #9e9e9e;
+  --text-disabled: #bdbdbd;
+  
+  /* === 背景色彩 === */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-sidebar: #2c3e50;
+  --bg-sidebar-dark: #34495e;
+  --bg-overlay: rgba(255, 255, 255, 0.95);
+  
+  /* === 陰影 === */
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.16);
+  
+  /* === 設計系統 === */
+  --radius: 8px;
+  --radius-large: 12px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* === 字體系統 === */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  
+  /* === 間距系統 === */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+}
+
+/* === 基礎重置 === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans TC', 'Montserrat', '微軟正黑體', sans-serif;
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* === 按鈕系統 === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md) var(--spacing-xl);
+  border: none;
+  border-radius: var(--radius);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition);
+  gap: var(--spacing-sm);
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+  color: var(--white);
+  box-shadow: var(--shadow-light);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background: var(--success);
+  color: var(--white);
+}
+
+.btn-success:hover {
+  background: var(--success-dark);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: var(--error);
+  color: var(--white);
+}
+
+.btn-danger:hover {
+  background: var(--error-dark);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--gray-200);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--gray-300);
+}
+
+.btn-outline-primary {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.btn-outline-primary:hover {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.btn-sm {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* === 表單元素 === */
+.form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+  display: block;
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: var(--spacing-sm);
+}
+
+.form-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--gray-300);
+  border-radius: var(--radius);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.1);
+}
+
+/* === 主要布局 === */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 280px;
+  background: var(--bg-sidebar);
+  color: var(--white);
+  overflow-y: auto;
+  transition: var(--transition);
+}
+
+.sidebar-header {
+  padding: var(--spacing-xl);
+  background: var(--bg-sidebar-dark);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--white);
+}
+
+.sidebar-subtitle {
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: var(--spacing-xs);
+}
+
+.sidebar-nav {
+  padding: var(--spacing-lg) 0;
+}
+
+.nav-item {
+  margin-bottom: var(--spacing-xs);
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-xl);
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: var(--transition);
+  gap: var(--spacing-md);
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.8;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  padding: var(--spacing-md) var(--spacing-xl);
+  box-shadow: var(--shadow-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.user-info {
+  text-align: left;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.user-role {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.content-area {
+  flex: 1;
+  padding: var(--spacing-xl);
+  overflow-y: auto;
+}
+
+/* === 卡片系統 === */
+.card {
+  background: var(--white);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-light);
+  overflow: hidden;
+  margin-bottom: var(--spacing-lg);
+}
+
+.card-header {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-50);
+}
+
+.card-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card-body {
+  padding: var(--spacing-xl);
+}
+
+/* === 工具類 === */
+.hidden {
+  display: none !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: var(--spacing-xs); }
+.mb-2 { margin-bottom: var(--spacing-sm); }
+.mb-3 { margin-bottom: var(--spacing-md); }
+.mb-4 { margin-bottom: var(--spacing-lg); }
+.mb-5 { margin-bottom: var(--spacing-xl); }
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: var(--spacing-xs); }
+.mt-2 { margin-top: var(--spacing-sm); }
+.mt-3 { margin-top: var(--spacing-md); }
+.mt-4 { margin-top: var(--spacing-lg); }
+.mt-5 { margin-top: var(--spacing-xl); }
+
+/* === 響應式設計 === */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: -100%;
+    z-index: 1000;
+    transition: left 0.3s ease;
+  }
+  
+  .sidebar.active {
+    left: 0;
+  }
+  
+  .main-content {
+    width: 100%;
+  }
+  
+  .content-area {
+    padding: var(--spacing-md);
+  }
+}

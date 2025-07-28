@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>學習分析 - SRS 學習系統</title>
+  
+  <!-- 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- 共用樣式 -->
+  <link rel="stylesheet" href="/shared/css/common.css">
+  
+  <!-- 頁面專用樣式 -->
+  <style>
+    /* 分析頁面統計卡片 */
+    .analytics-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .analytics-stat-card {
+      background: var(--white);
+      border-radius: var(--radius-large);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-light);
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .analytics-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-medium);
+    }
+
+    .stat-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .stat-number {
+      font-size: var(--font-size-3xl);
+      font-weight: 700;
+      margin-bottom: var(--spacing-sm);
+      color: var(--primary);
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+    }
+
+    /* 分析標籤頁 */
+    .analytics-tabs {
+      display: flex;
+      gap: var(--spacing-sm);
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: var(--spacing-xl);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      padding: var(--spacing-md) var(--spacing-lg);
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--primary);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* 分析面板 */
+    .analytics-panel {
+      margin-top: var(--spacing-lg);
+    }
+
+    .analytics-panel.hidden {
+      display: none;
+    }
+
+    /* 級別統計 */
+    .level-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .level-card {
+      background: var(--white);
+      border-radius: var(--radius-large);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-light);
+    }
+
+    .level-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      margin-bottom: var(--spacing-lg);
+      color: var(--text-primary);
+    }
+
+    .progress-bar {
+      background: var(--gray-200);
+      border-radius: var(--radius);
+      height: 8px;
+      margin: var(--spacing-sm) 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: var(--radius);
+      transition: width 0.3s ease;
+    }
+
+    /* 選擇器樣式 */
+    .analytics-controls {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+      margin-bottom: var(--spacing-lg);
+      flex-wrap: wrap;
+    }
+
+    .analytics-select {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: var(--font-size-sm);
+      min-width: 200px;
+    }
+
+    /* 表格樣式 */
+    .analytics-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      border-radius: var(--radius-large);
+      overflow: hidden;
+      box-shadow: var(--shadow-light);
+    }
+
+    .analytics-table th,
+    .analytics-table td {
+      padding: var(--spacing-md);
+      text-align: left;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .analytics-table th {
+      background: var(--gray-50);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .analytics-table tr:hover {
+      background: var(--gray-50);
+    }
+
+    /* 圖表容器 */
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin: var(--spacing-lg) 0;
+    }
+
+    /* 錯題列表 */
+    .mistake-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-sm) 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .mistake-item:last-child {
+      border-bottom: none;
+    }
+
+    .mistake-word {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .mistake-count {
+      color: var(--error);
+      font-weight: 500;
+    }
+
+    /* 響應式設計 */
+    @media (max-width: 768px) {
+      .analytics-stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .level-stats {
+        grid-template-columns: 1fr;
+      }
+      
+      .analytics-tabs {
+        flex-direction: column;
+        gap: 0;
+      }
+      
+      .tab-btn {
+        border-bottom: 1px solid var(--gray-200);
+        border-radius: 0;
+      }
+      
+      .analytics-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .analytics-select {
+        min-width: auto;
+      }
+    }
+
+    /* 學習進度分析樣式 */
+    .level-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .level-card {
+      background: var(--white);
+      border-radius: var(--radius-large);
+      padding: var(--spacing-lg);
+      box-shadow: var(--shadow-light);
+      border: 1px solid var(--gray-200);
+    }
+
+    .level-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-md);
+      text-align: center;
+    }
+
+    /* 會話統計樣式 */
+    .session-stat-item {
+      border-bottom: 1px solid var(--gray-200);
+      padding: var(--spacing-md) 0;
+    }
+
+    .session-stat-item:last-child {
+      border-bottom: none;
+    }
+
+    .badge {
+      background: var(--primary-light);
+      color: white;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: 12px;
+      font-size: var(--font-size-xs);
+      display: inline-block;
+    }
+
+    /* 響應式設計 - 進度分析 */
+    @media (max-width: 768px) {
+      .level-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 頁面內容將由JavaScript動態生成 -->
+
+  <!-- 配置文件 -->
+  <script src="../shared/js/config.js"></script>
+  
+  <!-- 共用腳本 -->
+  <script src="/shared/js/common.js"></script>
+  <script src="/shared/components/navigation.js"></script>
+  
+  <!-- 頁面專用腳本 -->
+  <script>
+    // 分析頁面狀態
+    let currentAnalyticsTab = 'overview';
+    let analyticsData = {};
+    let analyticsCharts = {};
+
+    /**
+     * 切換分析標籤頁
+     */
+    window.switchAnalyticsTab = function(tab) {
+      // 更新按鈕狀態
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+      
+      // 隱藏所有面板
+      document.querySelectorAll('.analytics-panel').forEach(panel => panel.classList.add('hidden'));
+      
+      // 顯示選中面板
+      document.getElementById(`analytics-${tab}`).classList.remove('hidden');
+      
+      currentAnalyticsTab = tab;
+      
+      // 載入對應數據
+      switch (tab) {
+        case 'overview':
+          loadAnalyticsOverview();
+          break;
+        case 'progress':
+          loadProgressAnalysis();
+          break;
+        case 'performance':
+          loadPerformanceAnalysis();
+          break;
+        case 'time':
+          loadTimeAnalysis();
+          break;
+        case 'users':
+          loadUsersAnalytics();
+          break;
+      }
+    }
+
+    /**
+     * 載入分析總覽
+     */
+    window.loadAnalyticsOverview = async function() {
+      try {
+        const days = document.getElementById('overview-period')?.value || 30;
+        
+        // 獲取管理員分析數據
+        const response = await apiRequest(`/api/admin/analytics/overview?days=${days}`);
+        
+        if (response && response.ok) {
+          const data = await response.json();
+          renderOverviewContent(data.data);
+        } else {
+          throw new Error('無法獲取分析數據');
+        }
+      } catch (error) {
+        console.error('載入分析總覽失敗:', error);
+        document.getElementById('overview-content').innerHTML = 
+          `<div class="alert alert-error">載入失敗：${error.message}</div>`;
+      }
+    }
+
+    /**
+     * 渲染總覽內容
+     */
+    function renderOverviewContent(data) {
+      console.log('Analytics data received:', data); // Debug log
+      
+      // 安全地獲取統計數據
+      const stats = data?.system_stats || {};
+      
+      // 更新統計卡片
+      document.getElementById('total-users-stat').textContent = stats.total_users || 0;
+      document.getElementById('active-users-stat').textContent = stats.active_users || 0;
+      document.getElementById('total-sessions-stat').textContent = stats.total_sessions || 0;
+      document.getElementById('avg-accuracy-stat').textContent = `${stats.avg_accuracy || 0}%`;
+      
+      // 渲染最近活動
+      const recentActivity = data?.recent_activity || [];
+      const activityContent = document.getElementById('recent-activity-content');
+      
+      if (recentActivity.length === 0) {
+        activityContent.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">暫無最近活動</p>';
+      } else {
+        activityContent.innerHTML = recentActivity.map(activity => {
+          // 格式化日期顯示
+          let dateDisplay = '未知日期';
+          if (activity.date) {
+            try {
+              const date = new Date(activity.date);
+              const today = new Date();
+              const yesterday = new Date(today);
+              yesterday.setDate(yesterday.getDate() - 1);
+              
+              if (date.toDateString() === today.toDateString()) {
+                dateDisplay = '今天';
+              } else if (date.toDateString() === yesterday.toDateString()) {
+                dateDisplay = '昨天';
+              } else {
+                dateDisplay = date.toLocaleDateString('zh-TW', { 
+                  month: 'numeric', 
+                  day: 'numeric' 
+                });
+              }
+            } catch (e) {
+              dateDisplay = activity.date;
+            }
+          }
+          
+          return `
+            <div class="activity-item">
+              <div class="activity-title">${dateDisplay}</div>
+              <div class="activity-detail">題目數: ${activity.daily_questions || 0}, 正確率: ${activity.accuracy || 0}%, 活躍用戶: ${activity.daily_active_users || 0}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    /**
+     * 載入進度分析
+     */
+    window.loadProgressAnalysis = async function() {
+      const userId = document.getElementById('progress-user')?.value;
+      
+      if (!userId) {
+        resetProgressCharts();
+        return;
+      }
+      
+      try {
+        const response = await apiRequest(`/api/admin/analytics/user/${userId}?days=30`);
+        
+        if (response && response.ok) {
+          const data = await response.json();
+          
+          if (data.data && data.data.time_analysis) {
+            renderProgressCharts(data.data.time_analysis);
+          } else {
+            showEmptyProgressState();
+          }
+        } else {
+          throw new Error('載入進度分析失敗');
+        }
+      } catch (error) {
+        console.error('載入進度分析失敗:', error);
+        resetProgressCharts();
+      }
+    }
+
+    /**
+     * 重置進度圖表
+     */
+    function resetProgressCharts() {
+      // 保持原有的 HTML 結構，不要重新設置 innerHTML
+      // 這樣 canvas 元素就不會被移除
+      
+      // 銷毀現有圖表
+      ['daily-time-chart', 'hourly-activity-chart', 'srs-effectiveness-chart'].forEach(chartId => {
+        const chartInstance = Chart.getChart(chartId);
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
+      });
+      
+      // 重置會話統計內容
+      const sessionStatsContent = document.getElementById('session-stats-content');
+      if (sessionStatsContent) {
+        sessionStatsContent.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">請選擇用戶以查看會話統計</p>';
+      }
+    }
+
+    /**
+     * 顯示空的進度狀態
+     */
+    function showEmptyProgressState() {
+      const emptyContent = `
+        <div style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+          <div style="margin-bottom: 0.5rem; font-weight: 500;">暫無學習進度數據</div>
+          <div style="font-size: 0.875rem;">用戶開始學習後將顯示進度分析</div>
+        </div>
+      `;
+      
+      document.getElementById('progress-content').innerHTML = emptyContent;
+    }
+
+    /**
+     * 渲染進度圖表
+     */
+    function renderProgressCharts(timeData) {
+      // 確保所有 canvas 元素都存在
+      const dailyTimeCanvas = document.getElementById('daily-time-chart');
+      const hourlyActivityCanvas = document.getElementById('hourly-activity-chart');
+      const srsCanvas = document.getElementById('srs-effectiveness-chart');
+      
+      if (!dailyTimeCanvas || !hourlyActivityCanvas || !srsCanvas) {
+        console.error('Canvas elements not found in DOM');
+        return;
+      }
+      
+      // 確保數據存在
+      if (!timeData || typeof timeData !== 'object') {
+        console.error('Invalid time data provided');
+        return;
+      }
+      
+      // 1. 每日學習時間趨勢圖
+      const dailyTimeCtx = dailyTimeCanvas.getContext('2d');
+      const existingDailyChart = Chart.getChart('daily-time-chart');
+      if (existingDailyChart) {
+        existingDailyChart.destroy();
+      }
+      
+      new Chart(dailyTimeCtx, {
+        type: 'line',
+        data: {
+          labels: (timeData.daily_study_time || []).map(d => new Date(d.date).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })),
+          datasets: [{
+            label: '學習時間 (分鐘)',
+            data: (timeData.daily_study_time || []).map(d => d.study_time_minutes),
+            borderColor: '#7C4DFF',
+            backgroundColor: 'rgba(124, 77, 255, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '時間 (分鐘)'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+
+      // 2. 學習時段偏好分析圖
+      const hourlyActivityCtx = hourlyActivityCanvas.getContext('2d');
+      const existingHourlyChart = Chart.getChart('hourly-activity-chart');
+      if (existingHourlyChart) {
+        existingHourlyChart.destroy();
+      }
+      
+      // 填充24小時數據，確保所有小時都有數據
+      const hourlyData = Array.from({length: 24}, (_, hour) => {
+        const existing = (timeData.hourly_activity || []).find(h => h.hour === hour);
+        return {
+          hour,
+          session_count: existing ? existing.session_count : 0,
+          total_time_minutes: existing ? existing.total_time_minutes : 0
+        };
+      });
+      
+      new Chart(hourlyActivityCtx, {
+        type: 'bar',
+        data: {
+          labels: hourlyData.map(h => `${h.hour}:00`),
+          datasets: [{
+            label: '會話次數',
+            data: hourlyData.map(h => h.session_count),
+            backgroundColor: 'rgba(33, 150, 243, 0.8)',
+            borderColor: '#2196F3',
+            borderWidth: 1,
+            yAxisID: 'y'
+          }, {
+            label: '學習時間 (分鐘)',
+            data: hourlyData.map(h => h.total_time_minutes),
+            backgroundColor: 'rgba(124, 77, 255, 0.8)',
+            borderColor: '#7C4DFF',
+            borderWidth: 1,
+            yAxisID: 'y1'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: '時間'
+              }
+            },
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: {
+                display: true,
+                text: '會話次數'
+              }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: {
+                display: true,
+                text: '學習時間 (分鐘)'
+              },
+              grid: {
+                drawOnChartArea: false,
+              }
+            }
+          }
+        }
+      });
+
+      // 3. SRS 間隔效果分析圖
+      const srsCtx = srsCanvas.getContext('2d');
+      const existingSrsChart = Chart.getChart('srs-effectiveness-chart');
+      if (existingSrsChart) {
+        existingSrsChart.destroy();
+      }
+      
+      if (timeData.srs_effectiveness && timeData.srs_effectiveness.length > 0) {
+        new Chart(srsCtx, {
+          type: 'doughnut',
+          data: {
+            labels: timeData.srs_effectiveness.map(s => s.interval_range),
+            datasets: [{
+              label: '記憶保留率',
+              data: timeData.srs_effectiveness.map(s => s.retention_rate),
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 205, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)'
+              ],
+              borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 205, 86, 1)',
+                'rgba(75, 192, 192, 1)'
+              ],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.label}: ${context.parsed}%`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      } else {
+        srsCtx.canvas.style.display = 'none';
+        srsCtx.canvas.parentNode.innerHTML = '<div class="level-title">SRS 間隔效果分析</div><p style="text-align: center; color: var(--text-secondary); padding: 2rem;">暫無 SRS 複習記錄</p>';
+      }
+
+      // 4. 學習會話統計
+      const sessionStatsContent = document.getElementById('session-stats-content');
+      if (timeData.session_stats && timeData.session_stats.length > 0) {
+        sessionStatsContent.innerHTML = timeData.session_stats.map(stat => `
+          <div class="session-stat-item" style="border-bottom: 1px solid var(--gray-200); padding: 1rem 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong>${getSessionTypeName(stat.session_type)}</strong>
+              <span class="badge" style="background: var(--primary-light); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
+                ${stat.session_count || 0} 次會話
+              </span>
+            </div>
+            <div class="session-metrics" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+              <div>
+                <div>平均時長</div>
+                <div style="color: var(--text-primary); font-weight: 500;">${stat.avg_duration_minutes || 0} 分鐘</div>
+              </div>
+              <div>
+                <div>平均題數</div>
+                <div style="color: var(--text-primary); font-weight: 500;">${stat.avg_questions || 0} 題</div>
+              </div>
+              <div>
+                <div>平均正確率</div>
+                <div style="color: var(--text-primary); font-weight: 500;">${stat.avg_accuracy || 0}%</div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        sessionStatsContent.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">暫無會話統計</p>';
+      }
+    }
+
+    /**
+     * 獲取會話類型名稱
+     */
+    function getSessionTypeName(sessionType) {
+      const typeNames = {
+        'typing_practice': '打字練習',
+        'vocabulary_review': '單字複習',
+        'quiz_mode': '測驗模式',
+        'speed_challenge': '速度挑戰'
+      };
+      return typeNames[sessionType] || sessionType;
+    }
+
+    /**
+     * 載入表現分析
+     */
+    window.loadPerformanceAnalysis = async function() {
+      const userId = document.getElementById('performance-user')?.value;
+      
+      if (!userId) {
+        resetPerformanceCharts();
+        return;
+      }
+      
+      try {
+        const response = await apiRequest(`/api/admin/analytics/user/${userId}?days=30`);
+        
+        if (response && response.ok) {
+          const data = await response.json();
+          
+          // 檢查是否有任何表現數據
+          const performance = data.data.performance;
+          const hasPerformanceData = performance && (
+            (performance.daily_performance && performance.daily_performance.length > 0) ||
+            (performance.mode_performance && performance.mode_performance.length > 0) ||
+            (performance.level_performance && performance.level_performance.length > 0) ||
+            (performance.frequent_mistakes && performance.frequent_mistakes.length > 0)
+          );
+          
+          if (hasPerformanceData) {
+            renderPerformanceCharts(performance);
+          } else {
+            showEmptyPerformanceState();
+          }
+        } else {
+          throw new Error('載入答題表現分析失敗');
+        }
+      } catch (error) {
+        console.error('載入答題表現分析失敗:', error);
+        resetPerformanceCharts();
+      }
+    }
+
+    /**
+     * 重置表現圖表
+     */
+    function resetPerformanceCharts() {
+      // 銷毀現有圖表
+      ['daily-performance-chart', 'mode-performance-chart', 'level-performance-chart'].forEach(chartId => {
+        const chartInstance = Chart.getChart(chartId);
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
+      });
+      
+      // 重置錯題列表
+      const mistakesList = document.getElementById('frequent-mistakes-list');
+      if (mistakesList) {
+        mistakesList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">請選擇用戶以查看錯題分析</p>';
+      }
+    }
+
+    /**
+     * 渲染表現圖表
+     */
+    function renderPerformanceCharts(performanceData) {
+      // 銷毀現有圖表
+      ['daily-performance-chart', 'mode-performance-chart', 'level-performance-chart'].forEach(chartId => {
+        const chartInstance = Chart.getChart(chartId);
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
+      });
+      
+      // 1. 每日答題趨勢圖
+      if (performanceData.daily_performance && performanceData.daily_performance.length > 0) {
+        const dailyCtx = document.getElementById('daily-performance-chart').getContext('2d');
+        new Chart(dailyCtx, {
+          type: 'line',
+          data: {
+            labels: performanceData.daily_performance.map(d => new Date(d.date).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })),
+            datasets: [{
+              label: '正確率 (%)',
+              data: performanceData.daily_performance.map(d => d.accuracy),
+              borderColor: '#7C4DFF',
+              backgroundColor: 'rgba(124, 77, 255, 0.1)',
+              tension: 0.4,
+              fill: true,
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                  callback: function(value) {
+                    return value + '%';
+                  }
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }
+        });
+      }
+
+      // 2. 各練習模式表現對比
+      if (performanceData.mode_performance && performanceData.mode_performance.length > 0) {
+        const modeCtx = document.getElementById('mode-performance-chart').getContext('2d');
+        new Chart(modeCtx, {
+          type: 'bar',
+          data: {
+            labels: performanceData.mode_performance.map(m => {
+              const modeNames = {
+                'typing_practice': '打字練習',
+                'srs_learning': 'SRS學習',
+                'review': '複習模式',
+                'quiz_mode': '測驗模式'
+              };
+              return modeNames[m.mode] || m.mode;
+            }),
+            datasets: [{
+              label: '正確率 (%)',
+              data: performanceData.mode_performance.map(m => m.accuracy),
+              backgroundColor: ['#7C4DFF', '#2196F3', '#43e97b', '#ff9800'],
+              borderColor: ['#6C63FF', '#1976D2', '#38d967', '#f57c00'],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                  callback: function(value) {
+                    return value + '%';
+                  }
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }
+        });
+      }
+
+      // 3. 各級別表現對比
+      if (performanceData.level_performance && performanceData.level_performance.length > 0) {
+        const levelCtx = document.getElementById('level-performance-chart').getContext('2d');
+        new Chart(levelCtx, {
+          type: 'doughnut',
+          data: {
+            labels: performanceData.level_performance.map(l => `${l.level} 級別`),
+            datasets: [{
+              data: performanceData.level_performance.map(l => l.accuracy),
+              backgroundColor: ['#ff5252', '#ff9800', '#43e97b', '#2196F3', '#9c27b0'],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return context.label + ': ' + context.parsed + '%';
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // 4. 常錯單字列表
+      const mistakesList = document.getElementById('frequent-mistakes-list');
+      if (performanceData.frequent_mistakes && performanceData.frequent_mistakes.length > 0) {
+        mistakesList.innerHTML = performanceData.frequent_mistakes.map((mistake, index) => `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid var(--gray-200);">
+            <div>
+              <span style="color: var(--text-secondary); margin-right: 0.5rem;">${index + 1}.</span>
+              <strong>${mistake.word}</strong>
+              <span style="color: var(--text-secondary); margin-left: 0.5rem;">(${mistake.level}級)</span>
+            </div>
+            <div style="text-align: right;">
+              <div style="color: var(--error);">${mistake.mistake_count} 次錯誤</div>
+              <div style="font-size: 0.875rem; color: var(--text-secondary);">${mistake.definition || '無定義'}</div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        mistakesList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">暫無錯題記錄</p>';
+      }
+    }
+
+    /**
+     * 顯示空的表現狀態
+     */
+    function showEmptyPerformanceState() {
+      document.getElementById('performance-content').innerHTML = `
+        <div style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+          <div style="margin-bottom: 0.5rem; font-weight: 500;">暫無答題數據</div>
+          <div style="font-size: 0.875rem;">用戶完成答題練習後將顯示表現分析</div>
+        </div>
+      `;
+    }
+
+    /**
+     * 載入時間分析
+     */
+    window.loadTimeAnalysis = async function() {
+      const userId = document.getElementById('time-user')?.value;
+      
+      if (!userId) {
+        resetTimeAnalysisCharts();
+        return;
+      }
+      
+      try {
+        const response = await apiRequest(`/api/admin/analytics/user/${userId}?days=30`);
+        
+        if (response && response.ok) {
+          const data = await response.json();
+          
+          // 檢查是否有時間分析數據
+          const timeAnalysis = data.data.time_analysis;
+          const hasData = timeAnalysis && (
+            (timeAnalysis.daily_study_time && timeAnalysis.daily_study_time.length > 0) ||
+            (timeAnalysis.hourly_activity && timeAnalysis.hourly_activity.length > 0) ||
+            (timeAnalysis.time_distribution && Object.keys(timeAnalysis.time_distribution).length > 0)
+          );
+          
+          if (hasData) {
+            renderTimeAnalysisCharts(timeAnalysis);
+          } else {
+            showEmptyTimeAnalysisState();
+          }
+        } else {
+          document.getElementById('time-content').innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--error);">載入時間分析失敗</div>
+          `;
+        }
+      } catch (error) {
+        console.error('載入時間分析失敗:', error);
+        document.getElementById('time-content').innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--error);">載入時間分析失敗：${error.message}</div>
+        `;
+      }
+    }
+
+    /**
+     * 重置時間分析圖表
+     */
+    function resetTimeAnalysisCharts() {
+      // 銷毀現有圖表
+      ['time-daily-chart', 'time-hourly-chart'].forEach(chartId => {
+        const chartInstance = Chart.getChart(chartId);
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
+      });
+      
+      // 重置統計內容
+      const habitsContent = document.getElementById('time-habits-content');
+      if (habitsContent) {
+        habitsContent.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">請選擇用戶以查看學習習慣</p>';
+      }
+      
+      const efficiencyContent = document.getElementById('time-efficiency-content');
+      if (efficiencyContent) {
+        efficiencyContent.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">請選擇用戶以查看效率分析</p>';
+      }
+    }
+
+    /**
+     * 渲染時間分析圖表
+     */
+    function renderTimeAnalysisCharts(timeData) {
+      // 銷毀現有圖表
+      ['time-daily-chart', 'time-hourly-chart'].forEach(chartId => {
+        const chartInstance = Chart.getChart(chartId);
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
+      });
+
+      // 1. 每日學習時間趨勢圖
+      if (timeData.daily_study_time && timeData.daily_study_time.length > 0) {
+        const dailyTimeCtx = document.getElementById('time-daily-chart').getContext('2d');
+        new Chart(dailyTimeCtx, {
+          type: 'line',
+          data: {
+            labels: timeData.daily_study_time.map(d => new Date(d.date).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })),
+            datasets: [{
+              label: '學習時間 (分鐘)',
+              data: timeData.daily_study_time.map(d => d.study_time_minutes),
+              borderColor: '#7C4DFF',
+              backgroundColor: 'rgba(124, 77, 255, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: '時間 (分鐘)'
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+      }
+
+      // 2. 學習時段分布圖
+      if (timeData.hourly_activity && timeData.hourly_activity.length > 0) {
+        const hourlyData = Array.from({length: 24}, (_, hour) => {
+          const existing = timeData.hourly_activity.find(h => h.hour === hour);
+          return {
+            hour,
+            session_count: existing ? existing.session_count : 0,
+            total_time_minutes: existing ? existing.total_time_minutes : 0
+          };
+        });
+
+        const hourlyTimeCtx = document.getElementById('time-hourly-chart').getContext('2d');
+        new Chart(hourlyTimeCtx, {
+          type: 'bar',
+          data: {
+            labels: hourlyData.map(h => `${h.hour}:00`),
+            datasets: [{
+              label: '學習時間 (分鐘)',
+              data: hourlyData.map(h => h.total_time_minutes),
+              backgroundColor: 'rgba(124, 77, 255, 0.8)',
+              borderColor: '#7C4DFF',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: '時間'
+                }
+              },
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: '學習時間 (分鐘)'
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+      }
+
+      // 3. 學習習慣統計
+      const habitsContent = document.getElementById('time-habits-content');
+      const timeStats = timeData.time_distribution || {};
+      
+      habitsContent.innerHTML = `
+        <div style="display: grid; gap: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--gray-200);">
+            <span>總學習時間</span>
+            <strong>${Math.round((timeStats.total_time || 0) / 60)} 分鐘</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--gray-200);">
+            <span>平均每日學習</span>
+            <strong>${Math.round((timeStats.avg_daily_time || 0) / 60)} 分鐘</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--gray-200);">
+            <span>最長學習時間</span>
+            <strong>${Math.round((timeStats.max_session_time || 0) / 60)} 分鐘</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0;">
+            <span>學習會話數</span>
+            <strong>${timeStats.total_sessions || 0}</strong>
+          </div>
+        </div>
+      `;
+
+      // 4. 學習效率分析
+      const efficiencyContent = document.getElementById('time-efficiency-content');
+      
+      efficiencyContent.innerHTML = `
+        <div style="display: grid; gap: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--gray-200);">
+            <span>最常學習時段</span>
+            <strong>${timeStats.peak_hour || '無數據'}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--gray-200);">
+            <span>連續學習天數</span>
+            <strong>${timeStats.streak_days || 0} 天</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--gray-200);">
+            <span>本週學習天數</span>
+            <strong>${timeStats.weekly_active_days || 0} 天</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0;">
+            <span>平均會話時長</span>
+            <strong>${Math.round((timeStats.avg_session_time || 0) / 60)} 分鐘</strong>
+          </div>
+        </div>
+      `;
+    }
+
+    /**
+     * 顯示空的時間分析狀態
+     */
+    function showEmptyTimeAnalysisState() {
+      document.getElementById('time-content').innerHTML = `
+        <div style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">⏰</div>
+          <div style="margin-bottom: 0.5rem; font-weight: 500;">暫無時間數據</div>
+          <div style="font-size: 0.875rem;">用戶開始學習後將顯示時間分析</div>
+        </div>
+      `;
+    }
+
+    /**
+     * 載入用戶分析列表
+     */
+    window.loadUsersAnalytics = async function() {
+      const tbody = document.getElementById('users-analytics-tbody');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">載入中...</td></tr>';
+      
+      try {
+        const response = await apiRequest('/api/admin/analytics/users?days=30');
+        
+        if (response && response.ok) {
+          const data = await response.json();
+          renderUsersAnalyticsTable(data.data.users);
+        } else {
+          throw new Error('載入用戶分析失敗');
+        }
+      } catch (error) {
+        console.error('載入用戶分析失敗:', error);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--error);">載入失敗</td></tr>';
+      }
+    }
+
+    /**
+     * 渲染用戶分析表格
+     */
+    function renderUsersAnalyticsTable(users) {
+      const tbody = document.getElementById('users-analytics-tbody');
+      
+      if (!users || users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">暫無用戶數據</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = users.map(user => `
+        <tr>
+          <td>${user.username}</td>
+          <td>${user.full_name || '-'}</td>
+          <td>${user.total_questions || 0}</td>
+          <td>${user.accuracy || 0}%</td>
+          <td>${user.study_days || 0}</td>
+          <td>
+            <button class="btn btn-sm btn-secondary" onclick="viewUserAnalytics(${user.id})">查看詳情</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    /**
+     * 查看用戶詳細分析
+     */
+    window.viewUserAnalytics = function(userId) {
+      // 切換到進度分析標籤並選擇該用戶
+      switchAnalyticsTab('progress');
+      document.getElementById('progress-user').value = userId;
+      loadProgressAnalysis();
+    }
+
+    /**
+     * 載入用戶選項
+     */
+    async function loadUserOptions() {
+      try {
+        const response = await apiRequest('/api/admin/users');
+        
+        if (response && response.ok) {
+          const data = await response.json();
+          const users = data.users || [];
+          
+          // 更新所有用戶選擇器
+          const selectors = ['progress-user', 'performance-user', 'time-user'];
+          selectors.forEach(selectorId => {
+            const selector = document.getElementById(selectorId);
+            if (selector) {
+              selector.innerHTML = '<option value="">選擇用戶</option>' + 
+                users.map(user => `<option value="${user.id}">${user.username} (${user.full_name || '無姓名'})</option>`).join('');
+            }
+          });
+        }
+      } catch (error) {
+        console.error('載入用戶選項失敗:', error);
+      }
+    }
+
+    /**
+     * 初始化分析頁面
+     */
+    function initializeAnalytics() {
+      const contentArea = initializeNavigation('analytics', '學習分析');
+      
+      contentArea.innerHTML = `
+        <!-- 統計卡片 -->
+        <div class="analytics-stats-grid">
+          <div class="analytics-stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-number" id="total-users-stat">0</div>
+            <div class="stat-label">總使用者數</div>
+          </div>
+          
+          <div class="analytics-stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-number" id="active-users-stat">0</div>
+            <div class="stat-label">活躍用戶</div>
+          </div>
+          
+          <div class="analytics-stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-number" id="total-sessions-stat">0</div>
+            <div class="stat-label">學習會話</div>
+          </div>
+          
+          <div class="analytics-stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-number" id="avg-accuracy-stat">0%</div>
+            <div class="stat-label">平均正確率</div>
+          </div>
+        </div>
+
+        <!-- 分析標籤頁 -->
+        <div class="analytics-tabs">
+          <button class="tab-btn active" data-tab="overview" onclick="switchAnalyticsTab('overview')">總覽</button>
+          <button class="tab-btn" data-tab="progress" onclick="switchAnalyticsTab('progress')">學習進度</button>
+          <button class="tab-btn" data-tab="performance" onclick="switchAnalyticsTab('performance')">答題表現</button>
+          <button class="tab-btn" data-tab="time" onclick="switchAnalyticsTab('time')">時間分析</button>
+          <button class="tab-btn" data-tab="users" onclick="switchAnalyticsTab('users')">用戶詳情</button>
+        </div>
+
+        <!-- 總覽面板 -->
+        <div id="analytics-overview" class="analytics-panel">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">系統學習概況</h3>
+              <div class="analytics-controls">
+                <select id="overview-period" class="analytics-select" onchange="loadAnalyticsOverview()">
+                  <option value="7">最近 7 天</option>
+                  <option value="30" selected>最近 30 天</option>
+                  <option value="90">最近 90 天</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="overview-content">
+                <div id="recent-activity-content">
+                  <p style="text-align: center; color: var(--text-secondary); padding: 2rem;">載入中...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 學習進度面板 -->
+        <div id="analytics-progress" class="analytics-panel hidden">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">學習進度分析</h3>
+              <div class="analytics-controls">
+                <select id="progress-user" class="analytics-select" onchange="loadProgressAnalysis()">
+                  <option value="">選擇用戶</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="progress-content">
+                <div class="level-stats">
+                  <div class="level-card">
+                    <div class="level-title">每日學習時間趨勢</div>
+                    <canvas id="daily-time-chart" style="max-height: 300px;"></canvas>
+                  </div>
+                  <div class="level-card">
+                    <div class="level-title">學習時段偏好分析</div>
+                    <canvas id="hourly-activity-chart" style="max-height: 300px;"></canvas>
+                  </div>
+                </div>
+                
+                <div class="level-stats">
+                  <div class="level-card">
+                    <div class="level-title">SRS 間隔效果分析</div>
+                    <canvas id="srs-effectiveness-chart" style="max-height: 300px;"></canvas>
+                  </div>
+                  <div class="level-card">
+                    <div class="level-title">學習會話統計</div>
+                    <div id="session-stats-content">
+                      <p style="text-align: center; color: var(--text-secondary); padding: 2rem;">請選擇用戶以查看會話統計</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 答題表現面板 -->
+        <div id="analytics-performance" class="analytics-panel hidden">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">答題表現分析</h3>
+              <div class="analytics-controls">
+                <select id="performance-user" class="analytics-select" onchange="loadPerformanceAnalysis()">
+                  <option value="">選擇用戶</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="performance-content">
+                <div class="level-stats">
+                  <div class="level-card">
+                    <div class="level-title">每日答題準確率</div>
+                    <canvas id="daily-performance-chart" style="max-height: 300px;"></canvas>
+                  </div>
+                  <div class="level-card">
+                    <div class="level-title">各時段答題表現</div>
+                    <canvas id="mode-performance-chart" style="max-height: 300px;"></canvas>
+                  </div>
+                </div>
+                
+                <div class="level-stats">
+                  <div class="level-card">
+                    <div class="level-title">各級別表現對比</div>
+                    <canvas id="level-performance-chart" style="max-height: 300px;"></canvas>
+                  </div>
+                  <div class="level-card">
+                    <div class="level-title">常錯單字 Top 10</div>
+                    <div id="frequent-mistakes-list" style="max-height: 300px; overflow-y: auto;">
+                      <p style="text-align: center; color: var(--text-secondary); padding: 2rem;">請選擇用戶以查看錯題分析</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 時間分析面板 -->
+        <div id="analytics-time" class="analytics-panel hidden">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">學習時間分析</h3>
+              <div class="analytics-controls">
+                <select id="time-user" class="analytics-select" onchange="loadTimeAnalysis()">
+                  <option value="">選擇用戶</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="time-content">
+                <div class="level-stats">
+                  <div class="level-card">
+                    <div class="level-title">每日學習時間趨勢</div>
+                    <canvas id="time-daily-chart" style="max-height: 300px;"></canvas>
+                  </div>
+                  <div class="level-card">
+                    <div class="level-title">學習時段分布</div>
+                    <canvas id="time-hourly-chart" style="max-height: 300px;"></canvas>
+                  </div>
+                </div>
+                
+                <div class="level-stats">
+                  <div class="level-card">
+                    <div class="level-title">學習習慣統計</div>
+                    <div id="time-habits-content">
+                      <p style="text-align: center; color: var(--text-secondary); padding: 2rem;">請選擇用戶以查看學習習慣</p>
+                    </div>
+                  </div>
+                  <div class="level-card">
+                    <div class="level-title">學習效率分析</div>
+                    <div id="time-efficiency-content">
+                      <p style="text-align: center; color: var(--text-secondary); padding: 2rem;">請選擇用戶以查看效率分析</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 用戶詳情面板 -->
+        <div id="analytics-users" class="analytics-panel hidden">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">用戶學習詳情</h3>
+              <div class="analytics-controls">
+                <button class="btn btn-secondary btn-sm" onclick="loadUsersAnalytics()">刷新數據</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="users-table-container">
+                <table class="analytics-table">
+                  <thead>
+                    <tr>
+                      <th>用戶名</th>
+                      <th>姓名</th>
+                      <th>總題數</th>
+                      <th>正確率</th>
+                      <th>學習天數</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="users-analytics-tbody">
+                    <tr>
+                      <td colspan="6" style="text-align: center; padding: 2rem;">載入中...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // 載入初始數據
+      loadAnalyticsOverview();
+      loadUserOptions();
+      
+      // 修復登出按鈕事件綁定
+      setTimeout(() => {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', function() {
+            if (typeof logout === 'function') {
+              logout();
+            } else {
+              localStorage.removeItem('admin_token');
+              window.location.href = '/admin.html';
+            }
+          });
+        }
+      }, 200);
+    }
+
+    // 頁面載入完成後初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 檢查認證狀態
+      if (!isAuthenticated()) {
+        redirectToLogin();
+        return;
+      }
+      
+      setTimeout(initializeAnalytics, 100);
+    });
+  </script>
+</body>
+</html>

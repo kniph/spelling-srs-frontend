@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>儀表板 - SRS 學習系統</title>
+  
+  <!-- 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- 共用樣式 -->
+  <link rel="stylesheet" href="/shared/css/common.css">
+  
+  <!-- 頁面專用樣式 -->
+  <style>
+    /* 儀表板統計卡片 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius-large);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-light);
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-medium);
+    }
+
+    .stat-number {
+      font-size: var(--font-size-3xl);
+      font-weight: 700;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+    }
+
+    .stat-card.primary .stat-number { color: var(--primary); }
+    .stat-card.success .stat-number { color: var(--success); }
+    .stat-card.info .stat-number { color: var(--info); }
+    .stat-card.warning .stat-number { color: var(--warning); }
+    .stat-card.secondary .stat-number { color: #6c757d; }
+
+    /* 圖表容器 */
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin: var(--spacing-lg) 0;
+    }
+
+    /* 最近活動樣式 */
+    .activity-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .activity-search {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: var(--font-size-sm);
+      width: 200px;
+    }
+
+    .activity-item {
+      padding: var(--spacing-md) 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-title {
+      font-weight: 600;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .activity-detail {
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+    }
+
+    .show-more-container {
+      text-align: center;
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--gray-200);
+    }
+
+    /* 響應式設計 */
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .activity-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        align-items: stretch;
+      }
+      
+      .activity-search {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 頁面內容將由JavaScript動態生成 -->
+
+  <!-- 配置文件 -->
+  <script src="../shared/js/config.js"></script>
+  
+  <!-- 共用腳本 -->
+  <script src="/shared/js/common.js"></script>
+  <script src="/shared/components/navigation.js"></script>
+  
+  <!-- 頁面專用腳本 -->
+  <script>
+    // 儀表板數據
+    let dashboardData = {
+      stats: {
+        totalUsers: 0,
+        totalStudents: 0,
+        totalTeachers: 0,
+        totalBranchAdmins: 0,
+        totalOrganizations: 0
+      },
+      activities: []
+    };
+
+    // 最近活動管理
+    let currentActivitiesOffset = 0;
+    let currentActivitiesSearch = '';
+    let isLoadingMoreActivities = false;
+
+    /**
+     * 載入儀表板統計數據
+     */
+    async function loadDashboardStats() {
+      try {
+        // 載入用戶統計
+        const usersResponse = await apiRequest('/api/admin/users');
+        if (usersResponse && usersResponse.ok) {
+          const usersData = await usersResponse.json();
+          
+          // 計算各角色統計 - 修復屬性名稱
+          const users = usersData.users || [];
+          dashboardData.stats.totalUsers = users.length;
+          dashboardData.stats.totalStudents = users.filter(u => u.role_name === 'student').length;
+          dashboardData.stats.totalTeachers = users.filter(u => u.role_name === 'teacher').length;
+          dashboardData.stats.totalBranchAdmins = users.filter(u => u.role_name === 'branch_admin').length;
+        }
+
+        // 載入機構統計
+        const orgsResponse = await apiRequest('/api/admin/organizations');
+        if (orgsResponse && orgsResponse.ok) {
+          const orgsData = await orgsResponse.json();
+          dashboardData.stats.totalOrganizations = orgsData.pagination ? orgsData.pagination.total : orgsData.organizations.length;
+        }
+
+        // 更新統計顯示
+        updateStatsDisplay();
+
+      } catch (error) {
+        console.error('載入統計資料錯誤:', error);
+        showAlert('載入統計資料時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 更新統計數據顯示
+     */
+    function updateStatsDisplay() {
+      document.getElementById('total-users').textContent = dashboardData.stats.totalUsers;
+      document.getElementById('total-students').textContent = dashboardData.stats.totalStudents;
+      document.getElementById('total-teachers').textContent = dashboardData.stats.totalTeachers;
+      document.getElementById('total-branch-admins').textContent = dashboardData.stats.totalBranchAdmins;
+      document.getElementById('total-organizations').textContent = dashboardData.stats.totalOrganizations;
+    }
+
+    // 全域活動資料暫存
+    let allActivities = [];
+    let currentFilteredActivities = [];
+
+    /**
+     * 前端搜尋過濾
+     */
+    function filterActivities(activities, searchTerm) {
+      if (!searchTerm) return activities;
+      
+      const lowerSearch = searchTerm.toLowerCase();
+      return activities.filter(activity => 
+        activity.action.toLowerCase().includes(lowerSearch) ||
+        activity.detail.toLowerCase().includes(lowerSearch) ||
+        activity.operator.toLowerCase().includes(lowerSearch)
+      );
+    }
+
+    /**
+     * 載入最近活動
+     */
+    async function loadRecentActivities(reset = true) {
+      const container = document.getElementById('recent-activities');
+      const showMoreContainer = document.getElementById('show-more-container');
+
+      if (reset) {
+        currentActivitiesOffset = 0;
+        currentActivitiesSearch = document.getElementById('activity-search')?.value || '';
+        showLoading(container);
+      }
+
+      try {
+        // 如果是搜尋，使用已載入的資料進行前端過濾
+        if (currentActivitiesSearch && allActivities.length > 0) {
+          currentFilteredActivities = filterActivities(allActivities, currentActivitiesSearch);
+          displayActivities(currentFilteredActivities, reset);
+          return;
+        }
+
+        // 載入新資料（不傳搜尋參數到後端）
+        const response = await apiRequest(`/api/admin/analytics/recent-activities?limit=50&offset=0`);
+
+        if (!response) {
+          throw new Error('網路連線錯誤');
+        }
+
+        if (response.status === 403) {
+          // 權限不足
+          if (reset) {
+            container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">您沒有查看活動記錄的權限</p>';
+            showMoreContainer.classList.add('hidden');
+          }
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error('載入最近活動失敗');
+        }
+
+        const data = await response.json();
+        let activities = data.data.activities;
+
+        // 簡單去重：移除連續的相同操作記錄
+        if (activities && activities.length > 0) {
+          activities = activities.filter((activity, index) => {
+            if (index === 0) return true;
+            const prev = activities[index - 1];
+            // 如果action和detail都相同，且時間差小於5分鐘，視為重複
+            return !(activity.action === prev.action && 
+                    activity.detail === prev.detail && 
+                    Math.abs(new Date(activity.created_at) - new Date(prev.created_at)) < 300000);
+          });
+        }
+
+        // 儲存全部活動資料
+        allActivities = activities;
+        
+        // 套用搜尋過濾
+        currentFilteredActivities = currentActivitiesSearch ? 
+          filterActivities(activities, currentActivitiesSearch) : 
+          activities;
+
+        displayActivities(currentFilteredActivities, reset);
+
+      } catch (error) {
+        console.error('載入最近活動錯誤:', error);
+        if (reset) {
+          container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">載入活動記錄時發生錯誤</p>';
+        }
+        showMoreContainer.classList.add('hidden');
+        showAlert('載入活動記錄時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 顯示活動列表
+     */
+    function displayActivities(activities, reset = true) {
+      const container = document.getElementById('recent-activities');
+      const showMoreContainer = document.getElementById('show-more-container');
+      
+      if (activities.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">目前沒有活動記錄</p>';
+        showMoreContainer.classList.add('hidden');
+        return;
+      }
+
+      // 只顯示前5筆
+      const displayCount = Math.min(5, activities.length);
+      const displayActivities = activities.slice(0, displayCount);
+
+      container.innerHTML = displayActivities.map((activity, index) => `
+        <div class="activity-item">
+          <div class="activity-title">${activity.action}</div>
+          <div class="activity-detail">${activity.detail} - ${activity.time_ago}</div>
+        </div>
+      `).join('');
+
+      // 顯示或隱藏「顯示更多」按鈕（搜尋時隱藏）
+      if (currentActivitiesSearch || activities.length <= 5) {
+        showMoreContainer.classList.add('hidden');
+      } else {
+        showMoreContainer.classList.remove('hidden');
+      }
+    }
+
+    /**
+     * 載入更多活動
+     */
+    async function loadMoreActivities() {
+      if (isLoadingMoreActivities) return;
+      
+      isLoadingMoreActivities = true;
+      const btn = document.getElementById('show-more-btn');
+      const originalText = btn.textContent;
+      btn.textContent = '載入中...';
+      btn.disabled = true;
+
+      try {
+        // 如果有搜尋，顯示更多搜尋結果
+        if (currentActivitiesSearch) {
+          const container = document.getElementById('recent-activities');
+          const currentCount = container.children.length;
+          const remainingActivities = currentFilteredActivities.slice(currentCount, currentCount + 5);
+          
+          if (remainingActivities.length > 0) {
+            const newActivitiesHtml = remainingActivities.map((activity) => `
+              <div class="activity-item">
+                <div class="activity-title">${activity.action}</div>
+                <div class="activity-detail">${activity.detail} - ${activity.time_ago}</div>
+              </div>
+            `).join('');
+            
+            container.innerHTML += newActivitiesHtml;
+          }
+          
+          // 如果沒有更多資料，隱藏按鈕
+          if (container.children.length >= currentFilteredActivities.length) {
+            document.getElementById('show-more-container').classList.add('hidden');
+          }
+        } else {
+          // 正常載入更多（不搜尋時）
+          const container = document.getElementById('recent-activities');
+          const currentCount = container.children.length;
+          const remainingActivities = allActivities.slice(currentCount, currentCount + 5);
+          
+          if (remainingActivities.length > 0) {
+            const newActivitiesHtml = remainingActivities.map((activity) => `
+              <div class="activity-item">
+                <div class="activity-title">${activity.action}</div>
+                <div class="activity-detail">${activity.detail} - ${activity.time_ago}</div>
+              </div>
+            `).join('');
+            
+            container.innerHTML += newActivitiesHtml;
+          }
+          
+          // 如果沒有更多資料，隱藏按鈕
+          if (container.children.length >= allActivities.length) {
+            document.getElementById('show-more-container').classList.add('hidden');
+          }
+        }
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+        isLoadingMoreActivities = false;
+      }
+    }
+
+    /**
+     * 顯示載入狀態
+     */
+    function showLoading(container) {
+      if (container) {
+        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">載入中...</p>';
+      }
+    }
+
+    /**
+     * 防抖函數
+     */
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    /**
+     * 設置活動搜索
+     */
+    function setupActivitySearch() {
+      const searchInput = document.getElementById('activity-search');
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(() => {
+          loadRecentActivities(true);
+        }, 500));
+      }
+    }
+
+    /**
+     * 初始化儀表板
+     */
+    function initializeDashboard() {
+      const contentArea = initializeNavigation('dashboard', '儀表板');
+      
+      contentArea.innerHTML = `
+        <!-- 統計卡片 -->
+        <div class="stats-grid">
+          <div class="stat-card primary">
+            <div class="stat-number" id="total-users">0</div>
+            <div class="stat-label">總使用者數</div>
+          </div>
+          
+          <div class="stat-card warning">
+            <div class="stat-number" id="total-branch-admins">0</div>
+            <div class="stat-label">分校主任數量</div>
+          </div>
+
+          <div class="stat-card info">
+            <div class="stat-number" id="total-teachers">0</div>
+            <div class="stat-label">教師數量</div>
+          </div>
+
+          <div class="stat-card success">
+            <div class="stat-number" id="total-students">0</div>
+            <div class="stat-label">學生數量</div>
+          </div>
+
+          <div class="stat-card secondary">
+            <div class="stat-number" id="total-organizations">0</div>
+            <div class="stat-label">機構數量</div>
+          </div>
+        </div>
+
+        <!-- 最近活動 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="activity-header">
+              <h3 class="card-title">最近活動</h3>
+              <input 
+                type="text" 
+                id="activity-search" 
+                class="activity-search"
+                placeholder="搜索活動..." 
+              >
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="recent-activities">
+              <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">載入中...</p>
+            </div>
+            <div id="show-more-container" class="show-more-container hidden">
+              <button id="show-more-btn" class="btn btn-outline-primary btn-sm" onclick="loadMoreActivities()">顯示更多</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // 載入數據
+      loadDashboardStats();
+      loadRecentActivities();
+      setupActivitySearch();
+    }
+
+    // 頁面載入完成後初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 延遲一點確保共用腳本已載入
+      setTimeout(() => {
+        // 初始化共用功能
+        if (typeof initializeCommonFeatures === 'function') {
+          initializeCommonFeatures();
+        }
+        if (typeof addSpinAnimation === 'function') {
+          addSpinAnimation();
+        }
+        
+        // 初始化頁面
+        initializeDashboard();
+      }, 100);
+    });
+  </script>
+</body>
+</html>

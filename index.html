@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SRS 學習系統</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- 配置文件 -->
+  <script src="shared/js/config.js"></script>
+  <style>
+    :root {
+      /* === 主要色彩系統 === */
+      --primary: #7C4DFF;
+      --primary-dark: #6C63FF;
+      --primary-light: #B39DFF;
+      --secondary: #2196F3;
+      --secondary-dark: #1976D2;
+      --secondary-light: #64B5F6;
+      
+      /* === 語義色彩 === */
+      --success: #43e97b;
+      --success-dark: #38d967;
+      --success-light: #66efac;
+      --error: #ff5252;
+      --error-dark: #e53935;
+      --error-light: #ff8a80;
+      --warning: #ff9800;
+      --warning-dark: #f57c00;
+      --warning-light: #ffb74d;
+      --info: #2196F3;
+      
+      /* === 中性色彩 === */
+      --white: #ffffff;
+      --gray-50: #fafafa;
+      --gray-100: #f5f5f5;
+      --gray-200: #eeeeee;
+      --gray-300: #e0e0e0;
+      --gray-400: #bdbdbd;
+      --gray-500: #9e9e9e;
+      --gray-600: #757575;
+      --gray-700: #616161;
+      --gray-800: #424242;
+      --gray-900: #212121;
+      
+      /* === 文字色彩 === */
+      --text-primary: #212121;
+      --text-secondary: #757575;
+      --text-muted: #9e9e9e;
+      --text-disabled: #bdbdbd;
+      
+      /* === 背景色彩 === */
+      --bg-primary: linear-gradient(135deg, #7C4DFF 0%, #2196F3 100%);
+      --bg-card: #ffffff;
+      --bg-overlay: rgba(255, 255, 255, 0.1);
+      --bg-hover: rgba(124, 77, 255, 0.08);
+      
+      /* === 陰影和邊框 === */
+      --shadow-light: 0 2px 8px rgba(124, 77, 255, 0.08);
+      --shadow-medium: 0 4px 16px rgba(124, 77, 255, 0.12);
+      --shadow-heavy: 0 8px 32px rgba(60, 0, 100, 0.12);
+      --border-light: 1px solid var(--gray-200);
+      --border-medium: 1.5px solid var(--gray-300);
+      --border-focus: 1.5px solid var(--secondary);
+      
+      /* === 設計系統 === */
+      --card-radius: 20px;
+      --button-radius: 999px;
+      --input-radius: 8px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      /* === 字體系統 === */
+      --font-size-xs: 0.75rem;    /* 12px */
+      --font-size-sm: 0.875rem;   /* 14px */
+      --font-size-base: 1rem;     /* 16px */
+      --font-size-lg: 1.125rem;   /* 18px */
+      --font-size-xl: 1.25rem;    /* 20px */
+      --font-size-2xl: 1.5rem;    /* 24px */
+      --font-size-3xl: 1.875rem;  /* 30px */
+      --font-size-4xl: 2.25rem;   /* 36px */
+      
+      --font-weight-normal: 400;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+      
+      --line-height-tight: 1.25;
+      --line-height-snug: 1.375;
+      --line-height-normal: 1.5;
+      --line-height-relaxed: 1.625;
+      --line-height-loose: 2;
+      
+      --letter-spacing-tighter: -0.05em;
+      --letter-spacing-tight: -0.025em;
+      --letter-spacing-normal: 0;
+      --letter-spacing-wide: 0.025em;
+      --letter-spacing-wider: 0.05em;
+      --letter-spacing-widest: 0.1em;
+      
+      /* === 間距系統 === */
+      --spacing-xs: 0.25rem;   /* 4px */
+      --spacing-sm: 0.5rem;    /* 8px */
+      --spacing-md: 1rem;      /* 16px */
+      --spacing-lg: 1.5rem;    /* 24px */
+      --spacing-xl: 2rem;      /* 32px */
+      --spacing-2xl: 3rem;     /* 48px */
+      --spacing-3xl: 4rem;     /* 64px */
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background: var(--bg-primary);
+      font-family: 'Noto Sans TC', 'Montserrat', '微軟正黑體', sans-serif;
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-normal);
+      line-height: var(--line-height-normal);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--card-radius);
+      box-shadow: var(--shadow-heavy);
+      padding: var(--spacing-2xl) var(--spacing-xl);
+      margin: var(--spacing-xl) auto;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    h1 {
+      color: var(--primary);
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-4xl);
+      line-height: var(--line-height-tight);
+      margin-bottom: var(--spacing-sm);
+      letter-spacing: var(--letter-spacing-wide);
+    }
+
+    h2 {
+      color: var(--primary-dark);
+      font-weight: var(--font-weight-normal);
+      font-size: var(--font-size-lg);
+      line-height: var(--line-height-relaxed);
+      margin-bottom: var(--spacing-lg);
+      opacity: 0.85;
+    }
+
+    h3 {
+      color: var(--text-primary);
+      font-weight: var(--font-weight-semibold);
+      font-size: var(--font-size-xl);
+      line-height: var(--line-height-snug);
+      margin-bottom: var(--spacing-md);
+      margin-top: var(--spacing-lg);
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 80%;
+      padding: var(--spacing-md);
+      margin: var(--spacing-sm) 0;
+      border: var(--border-medium);
+      border-radius: var(--input-radius);
+      font-size: var(--font-size-lg);
+      font-family: inherit;
+      line-height: var(--line-height-normal);
+      color: var(--text-primary);
+      background: var(--white);
+      transition: var(--transition);
+    }
+
+    input[type="text"]:focus, input[type="password"]:focus {
+      border: var(--border-focus);
+      outline: none;
+      box-shadow: var(--shadow-light);
+    }
+
+    /* === 統一按鈕樣式系統 === */
+    button {
+      border: none;
+      border-radius: var(--button-radius);
+      padding: var(--spacing-md) var(--spacing-xl);
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      line-height: var(--line-height-normal);
+      margin: var(--spacing-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      letter-spacing: var(--letter-spacing-wider);
+      font-family: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 主要按鈕樣式 */
+    button, .btn-primary {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--white);
+      box-shadow: var(--shadow-light);
+    }
+
+    button:hover, .btn-primary:hover {
+      background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
+      box-shadow: var(--shadow-medium);
+      transform: translateY(-2px);
+    }
+
+    /* 成功按鈕樣式 */
+    .btn-success {
+      background: linear-gradient(90deg, var(--success) 0%, var(--success-light) 100%);
+      color: var(--white);
+      box-shadow: 0 2px 8px rgba(67, 233, 123, 0.15);
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(90deg, var(--success-dark) 0%, var(--success) 100%);
+      box-shadow: 0 4px 16px rgba(67, 233, 123, 0.25);
+      transform: translateY(-2px);
+    }
+
+    /* 錯誤/危險按鈕樣式 */
+    .btn-danger {
+      background: linear-gradient(90deg, var(--error) 0%, var(--warning) 100%);
+      color: var(--white);
+      box-shadow: 0 2px 8px rgba(255, 82, 82, 0.15);
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(90deg, var(--error-dark) 0%, var(--error) 100%);
+      box-shadow: 0 4px 16px rgba(255, 82, 82, 0.25);
+      transform: translateY(-2px);
+    }
+
+    /* 次要按鈕樣式 */
+    .btn-secondary {
+      background: linear-gradient(90deg, var(--gray-100) 0%, var(--gray-200) 100%);
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-light);
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(90deg, var(--gray-200) 0%, var(--gray-300) 100%);
+      box-shadow: var(--shadow-medium);
+      transform: translateY(-2px);
+    }
+
+    /* 小尺寸按鈕 */
+    .btn-small {
+      padding: var(--spacing-sm) var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      margin: var(--spacing-xs);
+    }
+
+    /* 大尺寸按鈕 */
+    .btn-large {
+      padding: var(--spacing-lg) var(--spacing-2xl);
+      font-size: var(--font-size-xl);
+      margin: var(--spacing-md);
+    }
+
+    /* 禁用按鈕 */
+    button:disabled, .btn-disabled {
+      background: var(--gray-400);
+      color: var(--white);
+      cursor: not-allowed;
+      box-shadow: none;
+      opacity: 0.6;
+    }
+
+    button:disabled:hover, .btn-disabled:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* === 改進的間距和佈局系統 === */
+    .button-group {
+      margin: var(--spacing-lg) 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--spacing-sm);
+    }
+
+    .button-group button {
+      margin: var(--spacing-xs);
+    }
+
+    .section-spacing {
+      margin: var(--spacing-lg) 0;
+    }
+
+    .text-muted {
+      color: var(--text-muted);
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .mt-1 { margin-top: var(--spacing-md); }
+    .mt-2 { margin-top: var(--spacing-xl); }
+    .mb-1 { margin-bottom: var(--spacing-md); }
+    .mb-2 { margin-bottom: var(--spacing-xl); }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .text-center { text-align: center; }
+
+    /* === 改進的統計和狀態顯示 === */
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 1em;
+      margin: 1em 0;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+    }
+
+    .stat span {
+      display: block;
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      line-height: var(--line-height-tight);
+      color: var(--primary);
+      margin-top: var(--spacing-xs);
+    }
+
+    /* === 改進的輸入欄位樣式 === */
+    input[type="number"] {
+      width: 80px;
+      text-align: center;
+      border: var(--border-medium);
+      border-radius: var(--input-radius);
+      padding: 0.5em;
+      font-size: 1em;
+      font-family: inherit;
+      color: var(--text-primary);
+      background: var(--white);
+      transition: var(--transition);
+    }
+
+    input[type="number"]:focus {
+      border: var(--border-focus);
+      outline: none;
+      box-shadow: var(--shadow-light);
+    }
+
+    /* === 改進的問題和答案樣式 === */
+    .sentence {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-semibold);
+      color: var(--text-primary);
+      margin: var(--spacing-md) 0;
+      line-height: var(--line-height-snug);
+    }
+
+    .meaning {
+      color: var(--text-secondary);
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-normal);
+      margin: var(--spacing-md) 0;
+      line-height: var(--line-height-relaxed);
+    }
+
+    .word-length {
+      color: var(--text-muted);
+      font-size: var(--font-size-sm);
+      margin: var(--spacing-sm) 0;
+      line-height: var(--line-height-normal);
+    }
+
+    .result-success {
+      background: var(--success);
+      color: var(--white);
+      border-radius: 12px;
+      padding: 1em;
+      margin: 1em 0;
+      font-size: 1.2em;
+      font-weight: bold;
+      text-align: center;
+      animation: fadeIn 0.5s;
+      box-shadow: var(--shadow-light);
+    }
+
+    .result-error {
+      background: var(--error);
+      color: var(--white);
+      border-radius: 12px;
+      padding: 1em;
+      margin: 1em 0;
+      font-size: 1.2em;
+      font-weight: bold;
+      text-align: center;
+      animation: fadeIn 0.5s;
+      box-shadow: var(--shadow-light);
+    }
+
+    /* === 佈局增強和響應式設計 === */
+    @media (max-width: 480px) {
+      .card {
+        padding: var(--spacing-lg) var(--spacing-md);
+        margin: var(--spacing-md) var(--spacing-sm);
+        max-width: calc(100vw - 2rem);
+      }
+      
+      h1 {
+        font-size: var(--font-size-3xl);
+      }
+      
+      .button-group {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .button-group button {
+        width: 80%;
+        max-width: 280px;
+      }
+      
+      .stats {
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+    }
+
+    /* === 動畫和轉場增強 === */
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(60, 0, 100, 0.15);
+    }
+
+    .button-group button {
+      transition: var(--transition);
+    }
+
+    .stats {
+      background: var(--bg-overlay);
+      border-radius: 12px;
+      padding: var(--spacing-md);
+      margin: var(--spacing-md) 0;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* === 載入狀態 === */
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+      position: relative;
+    }
+
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 2px solid var(--primary);
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* === 焦點和無障礙改善 === */
+    button:focus, input:focus {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* === 狀態指示器 === */
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: var(--spacing-sm);
+    }
+
+    .status-new { background: var(--info); }
+    .status-review { background: var(--warning); }
+    .status-mastered { background: var(--success); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+
+    .sentence {
+      font-size: 1.3em;
+      margin: 1.2em 0 0.5em 0;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .meaning {
+      color: #666;
+      margin: 0.5em 0;
+      font-size: 1.1em;
+    }
+
+    .word-length {
+      color: #999;
+      font-size: 0.95em;
+      margin-bottom: 1em;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 1.5em;
+    }
+
+    .stats .stat {
+      background: #f3f3ff;
+      border-radius: 12px;
+      padding: 0.7em 1.2em;
+      color: var(--main-purple);
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    .word-card {
+      background: #f8f9ff;
+      border: 1px solid #e8eaff;
+      border-radius: 12px;
+      padding: 1em;
+      margin: 0.5em 0;
+      transition: all 0.2s;
+    }
+
+    .word-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(124,77,255,0.1);
+    }
+
+    .word-card .word-title {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #7C4DFF;
+      margin-bottom: 0.3em;
+    }
+
+    .word-card .word-definition {
+      color: #666;
+      margin-bottom: 0.3em;
+    }
+
+    .word-card .word-sentence {
+      font-style: italic;
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    .pagination-btn {
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 0.5em 1em;
+      margin: 0 0.2em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pagination-btn:hover {
+      background: #7C4DFF;
+      color: white;
+    }
+
+    .pagination-btn.active {
+      background: #7C4DFF;
+      color: white;
+    }
+
+    .progress-card {
+      background: #f8f9ff;
+      border: 1px solid #e8eaff;
+      border-radius: 12px;
+      padding: 1em;
+      margin: 0.5em 0;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .progress-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(124,77,255,0.1);
+    }
+
+    .progress-card .progress-word {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #7C4DFF;
+      margin-bottom: 0.3em;
+    }
+
+    .progress-card .progress-definition {
+      color: #666;
+      margin-bottom: 0.5em;
+    }
+
+    .progress-card .progress-status {
+      display: inline-block;
+      padding: 0.3em 0.8em;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: bold;
+      margin-bottom: 0.5em;
+    }
+
+    .progress-card .status-learning {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .progress-card .status-reviewing {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .progress-card .progress-time {
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    .progress-card .next-review {
+      position: absolute;
+      top: 1em;
+      right: 1em;
+      font-size: 0.8em;
+      color: #999;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 1.2rem 0.5rem;
+        max-width: 98vw;
+      }
+      input[type="text"], input[type="password"] {
+        width: 95%;
+      }
+      
+      #word-search {
+        width: 100% !important;
+        margin-top: 0.5em;
+      }
+      
+      .card #word-display h1 {
+        font-size: 1.5em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="login-card">
+    <h1>SRS 學習系統</h1>
+    <h2>間隔學習 x 單字強化</h2>
+    <input id="username" type="text" placeholder="帳號">
+    <input id="password" type="password" placeholder="密碼">
+    <button onclick="login()">登入</button>
+    <div id="loginMsg"></div>
+  </div>
+
+  <!--
+  <div id="register">
+    <h2>註冊</h2>
+    <input id="reg_username" placeholder="帳號">
+    <input id="reg_password" type="password" placeholder="密碼">
+    <button onclick="register()">註冊</button>
+    <div id="regMsg"></div>
+  </div>
+  -->
+
+  <div class="card" id="main" style="display:none;">
+    <h1>學習選單</h1>
+    
+    <!-- 主要學習功能 -->
+    <div class="button-group">
+      <button id="typing-practice-btn">開始練習</button>
+      <button id="srs-learning-btn">SRS 學習</button>
+    </div>
+    
+    <!-- 進度和複習 -->
+    <div class="button-group">
+      <button onclick="getProgress()">查詢我的進度</button>
+      <button onclick="getReview()">開始複習</button>
+    </div>
+    
+    <!-- 單字管理 -->
+    <div class="button-group">
+      <button onclick="showWordLists()">單字列表</button>
+    </div>
+    
+    <button onclick="logout()" class="btn-secondary mt-1">登出</button>
+    
+    <!-- 數據顯示區 -->
+  </div>
+
+  <!-- 複習模式區塊 -->
+  <div class="card" id="review-mode" style="display:none;">
+    <h2>複習模式</h2>
+    
+    <!-- 複習狀態 -->
+    <div id="review-status">
+      <div class="stats">
+        <div class="stat">待複習單字 <span id="review-count-display">0</span></div>
+        <div class="stat">已完成 <span id="review-completed">0</span></div>
+      </div>
+    </div>
+    
+    <!-- 題目顯示區 -->
+    <div id="review-question-area" style="display:none;">
+      <p id="review-word" class="sentence" style="font-size: 1.8em; font-weight: bold; color: #7C4DFF;"></p>
+      <p id="review-definition" class="meaning"></p>
+      <p style="color: #666; margin-top: 1em;">這個單字你記得嗎？</p>
+    </div>
+    
+    <!-- 答案選擇區 -->
+    <div id="review-answer-area" style="display:none;">
+      <div style="margin: 1.5em 0;">
+        <button id="review-correct" class="btn-success" onclick="answerReview(true)">記得 ✓</button>
+        <button id="review-wrong" class="btn-danger" onclick="answerReview(false)">忘記 ✗</button>
+      </div>
+    </div>
+    
+    <!-- 結果顯示區 -->
+    <div id="review-result-area" style="display: none;">
+      <p id="review-result-message"></p>
+      <p id="review-next-time" style="color: #666; font-size: 0.9em;"></p>
+      <button id="review-next-question" onclick="nextReviewQuestion()">下一題</button>
+    </div>
+    
+    <!-- 完成顯示區 -->
+    <div id="review-complete-area" style="display: none;">
+      <p style="font-size: 1.2em; color: #43e97b; font-weight: bold;">🎉 今日複習完成！</p>
+      <p style="color: #666;">恭喜你完成了所有需要複習的單字！</p>
+      <button onclick="showMainMenu()" style="margin-top: 1em;">返回主選單</button>
+    </div>
+    
+    <!-- 控制按鈕 -->
+    <div id="review-controls">
+      <button id="review-start" onclick="startReviewMode()">開始複習</button>
+      <button onclick="showMainMenu()">返回主選單</button>
+    </div>
+  </div>
+
+  <!-- 單字列表選擇頁面 -->
+  <div class="card" id="word-lists" style="display:none;">
+    <h1>單字列表</h1>
+    <h2>選擇要查看的單字等級</h2>
+    
+    <div style="margin: 1.5em 0;">
+      <button onclick="showWordsByLevel(400)">400 基礎單字</button>
+      <button onclick="showWordsByLevel(1200)">1200 進階單字</button>
+      <button onclick="showWordsByLevel(2000)">2000 中高級單字</button>
+    </div>
+    
+    <div style="margin: 1.5em 0; opacity: 0.6;">
+      <button disabled>4500 單字 (即將推出)</button>
+      <button disabled>7000 單字 (即將推出)</button>
+    </div>
+    
+    <button onclick="showMainMenu()">返回主選單</button>
+  </div>
+
+  <!-- 單字顯示頁面 -->
+  <div class="card" id="word-display" style="display:none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em;">
+      <h1 id="word-display-title">單字列表</h1>
+      <input type="text" id="word-search" placeholder="搜尋單字..." style="width: 200px;">
+    </div>
+    
+    <div id="word-stats" style="margin-bottom: 1em; color: #666;"></div>
+    
+    <div id="word-container" style="max-height: 400px; overflow-y: auto;">
+      <!-- 單字卡片會動態載入到這裡 -->
+    </div>
+    
+    <div id="pagination" style="margin-top: 1em; text-align: center;">
+      <!-- 分頁按鈕會動態載入到這裡 -->
+    </div>
+    
+    <button onclick="showWordLists()">返回列表選擇</button>
+    <button onclick="showMainMenu()">返回主選單</button>
+  </div>
+
+  <!-- 學習進度頁面 -->
+  <div class="card" id="progress-display" style="display:none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em;">
+      <h1>我的學習進度</h1>
+      <input type="text" id="progress-search" placeholder="搜尋單字..." style="width: 200px;">
+    </div>
+    
+    <div id="progress-stats" style="margin-bottom: 1em; color: #666;"></div>
+    
+    <div id="progress-container" style="max-height: 400px; overflow-y: auto;">
+      <!-- 進度卡片會動態載入到這裡 -->
+    </div>
+    
+    <div id="progress-pagination" style="margin-top: 1em; text-align: center;">
+      <!-- 分頁按鈕會動態載入到這裡 -->
+    </div>
+    
+    <button onclick="showMainMenu()">返回主選單</button>
+  </div>
+
+  <!-- 難度選擇區塊 -->
+  <div class="card" id="difficulty-selection" style="display:none;">
+    <h2>選擇練習模式</h2>
+    <button onclick="startPractice('400')">400 單字練習</button>
+    <button onclick="startPractice('1200')">1200 單字練習</button>
+    <button onclick="startPractice('2000')">2000 單字練習</button>
+    <button onclick="startPractice('mixed')">混合模式</button>
+    <button onclick="showMainMenu()">返回主選單</button>
+  </div>
+
+  <!-- SRS 設定區塊 -->
+  <div class="card" id="srs-settings" style="display:none;">
+    <h2>SRS 學習設定</h2>
+    
+    <div class="section-spacing">
+      <h3>選擇學習範圍</h3>
+      <div class="button-group">
+        <button id="srs-400" class="btn-primary" onclick="selectSrsLevel('400')">400 單字</button>
+        <button id="srs-1200" class="btn-primary" onclick="selectSrsLevel('1200')">1200 單字</button>
+        <button id="srs-2000" class="btn-primary" onclick="selectSrsLevel('2000')">2000 單字</button>
+        <button id="srs-mixed" class="btn-primary" onclick="selectSrsLevel('mixed')">混合模式</button>
+      </div>
+    </div>
+    
+    <div class="section-spacing">
+      <h3>每日新單字數量</h3>
+      <div class="text-center">
+        <input type="number" id="srs-daily-limit" min="5" max="50" value="10" />
+        <span style="margin-left: 0.5em;">個新單字</span>
+      </div>
+    </div>
+    
+    <button onclick="startSrsSession()">開始 SRS 學習</button>
+    <button onclick="showMainMenu()">返回主選單</button>
+  </div>
+
+  <!-- SRS 學習區塊 -->
+  <div class="card" id="srs-learning" style="display:none;">
+    <h2 id="srs-title">SRS 間隔重複學習</h2>
+    
+    <!-- 學習狀態 -->
+    <div id="srs-status">
+      <div class="stats">
+        <div class="stat">待複習 <span id="srs-review-count">0</span></div>
+        <div class="stat">新單字 <span id="srs-new-count">0</span></div>
+        <div class="stat">今日完成 <span id="srs-today-count">0</span></div>
+      </div>
+      <div class="text-center text-muted mt-1">
+        <span>今日目標：<span id="srs-daily-goal">10</span> 個新單字</span>
+      </div>
+    </div>
+    
+    <!-- 題目顯示區 -->
+    <div id="srs-question-area" style="display:none;">
+      <p id="srs-sentence" class="sentence"></p>
+      <p id="srs-meaning" class="meaning"></p>
+      <p id="srs-word-length" class="word-length"></p>
+      <p id="srs-word-status" class="text-muted"></p>
+    </div>
+    
+    <!-- 答案輸入區 -->
+    <div id="srs-answer-area" style="display:none;">
+      <input type="text" id="srs-user-input" placeholder="請輸入答案..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <button id="srs-submit-answer">提交答案</button>
+    </div>
+    
+    <!-- 結果顯示區 -->
+    <div id="srs-result-area" style="display: none;">
+      <p id="srs-result-message"></p>
+      <p id="srs-correct-answer"></p>
+      <p id="srs-next-review" class="text-muted"></p>
+      <button id="srs-next-question">下一題</button>
+    </div>
+    
+    <!-- 控制按鈕 -->
+    <div id="srs-controls">
+      <button id="srs-start-learning">開始學習</button>
+      <button onclick="showMainMenu()">返回主選單</button>
+    </div>
+  </div>
+
+  <!-- 打字填空練習區塊 -->
+  <div class="card" id="typing-practice" style="display:none;">
+    <h2 id="practice-title">打字填空練習</h2>
+    
+    <!-- 題目顯示區 -->
+    <div id="question-area">
+      <p id="sentence" class="sentence"></p>
+      <p id="meaning" class="meaning"></p>
+      <p id="word-length" class="word-length"></p>
+    </div>
+    
+    <!-- 答案輸入區 -->
+    <div id="answer-area">
+      <input type="text" id="user-input" placeholder="請輸入答案..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <button id="submit-answer">提交答案</button>
+    </div>
+    
+    <!-- 結果顯示區 -->
+    <div id="result-area" style="display: none;">
+      <p id="result-message"></p>
+      <p id="correct-answer"></p>
+      <button id="next-question">下一題</button>
+    </div>
+    
+    <!-- 返回按鈕 -->
+    <button id="back-to-main">返回主選單</button>
+    <div class="stats">
+      <div class="stat">答對 <span id="stat-correct">0</span></div>
+      <div class="stat">答錯 <span id="stat-wrong">0</span></div>
+      <div class="stat">正確率 <span id="stat-rate">0%</span></div>
+    </div>
+  </div>
+
+  <script>
+    let token = '';
+
+    function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.token) {
+          token = data.token;
+          document.getElementById('login-card').style.display = 'none';
+          document.getElementById('main').style.display = '';
+        } else {
+          document.getElementById('loginMsg').innerText = data.message || '登入失敗';
+        }
+      });
+    }
+
+    function getWords() {
+      fetch('/api/words', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(res => res.json())
+      .then(words => {
+        const ul = document.getElementById('words');
+        ul.innerHTML = '';
+        words.forEach(w => {
+          const li = document.createElement('li');
+          li.innerText = `${w.word} - ${w.definition}`;
+          ul.appendChild(li);
+        });
+      });
+    }
+
+    // === 學習進度功能 ===
+    let currentProgressPage = 1;
+    let progressPerPage = 15;
+    let allProgress = [];
+    let filteredProgress = [];
+
+    async function getProgress() {
+      try {
+        hideAllSections();
+        document.getElementById('progress-display').style.display = 'block';
+        
+        const response = await fetch('/api/progress', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const progress = await response.json();
+        
+        allProgress = progress;
+        filteredProgress = progress;
+        currentProgressPage = 1;
+        
+        displayProgress();
+        setupProgressPagination();
+        setupProgressSearch();
+        
+        document.getElementById('progress-stats').textContent = `共 ${progress.length} 個學習中的單字`;
+        
+      } catch (error) {
+        console.error('載入進度失敗:', error);
+        alert('載入進度失敗，請重試');
+      }
+    }
+
+    // 顯示進度卡片
+    function displayProgress() {
+      const startIndex = (currentProgressPage - 1) * progressPerPage;
+      const endIndex = startIndex + progressPerPage;
+      const progressToShow = filteredProgress.slice(startIndex, endIndex);
+      
+      const container = document.getElementById('progress-container');
+      container.innerHTML = '';
+      
+      progressToShow.forEach(progress => {
+        const progressCard = document.createElement('div');
+        progressCard.className = 'progress-card';
+        
+        // 格式化下次複習時間
+        const nextReviewDate = new Date(progress.next_review_at);
+        const now = new Date();
+        const isOverdue = nextReviewDate <= now;
+        
+        const timeDisplay = isOverdue ? 
+          '需要複習' : 
+          `${nextReviewDate.getMonth() + 1}/${nextReviewDate.getDate()} ${nextReviewDate.getHours()}:${nextReviewDate.getMinutes().toString().padStart(2, '0')}`;
+        
+        progressCard.innerHTML = `
+          <div class="next-review">${timeDisplay}</div>
+          <div class="progress-word">${progress.word}</div>
+          <div class="progress-definition">${progress.definition || '無定義'}</div>
+          <div class="progress-status ${progress.status === 'learning' ? 'status-learning' : 'status-reviewing'}">
+            ${progress.status === 'learning' ? '學習中' : '複習中'}
+          </div>
+          <div class="progress-time">
+            最後練習: ${progress.last_practiced_at ? new Date(progress.last_practiced_at).toLocaleDateString() : '尚未練習'}
+          </div>
+        `;
+        
+        container.appendChild(progressCard);
+      });
+    }
+
+    // 設定進度分頁
+    function setupProgressPagination() {
+      const totalPages = Math.ceil(filteredProgress.length / progressPerPage);
+      const paginationContainer = document.getElementById('progress-pagination');
+      paginationContainer.innerHTML = '';
+      
+      if (totalPages <= 1) return;
+      
+      // 上一頁按鈕
+      if (currentProgressPage > 1) {
+        const prevBtn = document.createElement('button');
+        prevBtn.textContent = '‹ 上一頁';
+        prevBtn.className = 'pagination-btn';
+        prevBtn.onclick = () => {
+          currentProgressPage--;
+          displayProgress();
+          setupProgressPagination();
+        };
+        paginationContainer.appendChild(prevBtn);
+      }
+      
+      // 頁碼按鈕
+      const startPage = Math.max(1, currentProgressPage - 2);
+      const endPage = Math.min(totalPages, currentProgressPage + 2);
+      
+      for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.textContent = i;
+        pageBtn.className = 'pagination-btn' + (i === currentProgressPage ? ' active' : '');
+        pageBtn.onclick = () => {
+          currentProgressPage = i;
+          displayProgress();
+          setupProgressPagination();
+        };
+        paginationContainer.appendChild(pageBtn);
+      }
+      
+      // 下一頁按鈕
+      if (currentProgressPage < totalPages) {
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = '下一頁 ›';
+        nextBtn.className = 'pagination-btn';
+        nextBtn.onclick = () => {
+          currentProgressPage++;
+          displayProgress();
+          setupProgressPagination();
+        };
+        paginationContainer.appendChild(nextBtn);
+      }
+    }
+
+    // 設定進度搜尋功能
+    function setupProgressSearch() {
+      const searchInput = document.getElementById('progress-search');
+      searchInput.value = '';
+      
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        if (searchTerm === '') {
+          filteredProgress = allProgress;
+        } else {
+          filteredProgress = allProgress.filter(progress => 
+            progress.word.toLowerCase().includes(searchTerm) ||
+            (progress.definition && progress.definition.toLowerCase().includes(searchTerm))
+          );
+        }
+        
+        currentProgressPage = 1;
+        displayProgress();
+        setupProgressPagination();
+        
+        document.getElementById('progress-stats').textContent = 
+          `共 ${filteredProgress.length} 個學習中的單字 ${searchTerm ? `(搜尋: "${searchTerm}")` : ''}`;
+      });
+    }
+
+    // === 複習模式功能 ===
+    let reviewList = [];
+    let reviewCurrent = 0;
+    let reviewCompleted = 0;
+
+    async function getReview() {
+      try {
+        hideAllSections();
+        document.getElementById('review-mode').style.display = 'block';
+        
+        const response = await fetch('/api/review', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const words = await response.json();
+        
+        if (words.length === 0) {
+          // 顯示沒有複習單字的狀態
+          document.getElementById('review-controls').style.display = 'none';
+          document.getElementById('review-complete-area').style.display = 'block';
+          document.getElementById('review-complete-area').innerHTML = `
+            <p style="font-size: 1.2em; color: #43e97b; font-weight: bold;">🎯 太棒了！</p>
+            <p style="color: #666;">目前沒有需要複習的單字，繼續保持學習進度！</p>
+            <button onclick="showMainMenu()" style="margin-top: 1em;">返回主選單</button>
+          `;
+          return;
+        }
+        
+        reviewList = words;
+        reviewCurrent = 0;
+        reviewCompleted = 0;
+        
+        // 更新狀態顯示
+        document.getElementById('review-count-display').textContent = words.length;
+        document.getElementById('review-completed').textContent = reviewCompleted;
+        
+        // 顯示開始按鈕
+        document.getElementById('review-controls').style.display = 'block';
+        document.getElementById('review-question-area').style.display = 'none';
+        document.getElementById('review-answer-area').style.display = 'none';
+        document.getElementById('review-result-area').style.display = 'none';
+        document.getElementById('review-complete-area').style.display = 'none';
+        
+      } catch (error) {
+        console.error('載入複習單字失敗:', error);
+        alert('載入複習單字失敗，請重試');
+      }
+    }
+
+    function startReviewMode() {
+      if (reviewList.length === 0) return;
+      
+      // 隱藏控制按鈕，顯示題目
+      document.getElementById('review-controls').style.display = 'none';
+      showReviewQuestion();
+    }
+
+    function showReviewQuestion() {
+      if (reviewCurrent >= reviewList.length) {
+        // 複習完成
+        document.getElementById('review-question-area').style.display = 'none';
+        document.getElementById('review-answer-area').style.display = 'none';
+        document.getElementById('review-result-area').style.display = 'none';
+        document.getElementById('review-complete-area').style.display = 'block';
+        return;
+      }
+      
+      const word = reviewList[reviewCurrent];
+      document.getElementById('review-word').textContent = word.word;
+      document.getElementById('review-definition').textContent = word.definition;
+      
+      // 顯示題目和答案選擇
+      document.getElementById('review-question-area').style.display = 'block';
+      document.getElementById('review-answer-area').style.display = 'block';
+      document.getElementById('review-result-area').style.display = 'none';
+    }
+
+    async function answerReview(correct) {
+      const word = reviewList[reviewCurrent];
+      
+      try {
+        const response = await fetch('/api/review/answer', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ word_id: word.id, correct })
+        });
+        
+        const result = await response.json();
+        
+        // 隱藏答案選擇，顯示結果
+        document.getElementById('review-answer-area').style.display = 'none';
+        document.getElementById('review-result-area').style.display = 'block';
+        
+        // 顯示結果訊息
+        if (correct) {
+          document.getElementById('review-result-message').innerHTML = '🎉 很好！你記得這個單字！';
+          document.getElementById('review-result-message').className = 'result-success';
+          if (result.next_review) {
+            const nextDate = new Date(result.next_review).toLocaleDateString('zh-TW');
+            document.getElementById('review-next-time').textContent = `下次複習時間：${nextDate}`;
+          }
+        } else {
+          document.getElementById('review-result-message').innerHTML = '💪 沒關係，多複習幾次就會記住的！';
+          document.getElementById('review-result-message').className = 'result-error';
+          document.getElementById('review-next-time').textContent = '稍後會再次出現複習';
+        }
+        
+        reviewCompleted++;
+        document.getElementById('review-completed').textContent = reviewCompleted;
+        
+      } catch (error) {
+        console.error('提交複習答案失敗:', error);
+        alert('提交答案失敗，請重試');
+      }
+    }
+
+    function nextReviewQuestion() {
+      reviewCurrent++;
+      showReviewQuestion();
+    }
+
+    // function register() {
+    //   const username = document.getElementById('reg_username').value;
+    //   const password = document.getElementById('reg_password').value;
+    //   fetch('/api/auth/register', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ username, password })
+    //   })
+    //   .then(res => res.json())
+    //   .then(data => {
+    //     document.getElementById('regMsg').innerText = data.message || '註冊成功，請登入';
+    //   });
+    // }
+
+    function logout() {
+      token = '';
+      document.getElementById('main').style.display = 'none';
+      document.getElementById('login-card').style.display = '';
+    }
+
+    // 打字填空練習功能
+    let currentQuestion = null;
+    let wrongList = [];
+    let questionCount = 0;
+    let currentLevel = 'mixed';
+    let BATCH_SIZE = 10;
+
+    // 統計變數
+    let correctCount = 0;
+    let wrongCount = 0;
+
+    function updateStats() {
+      const total = correctCount + wrongCount;
+      document.getElementById('stat-correct').textContent = correctCount;
+      document.getElementById('stat-wrong').textContent = wrongCount;
+      document.getElementById('stat-rate').textContent = total > 0 ? Math.round(correctCount / total * 100) + '%' : '0%';
+    }
+
+    // 顯示難度選擇
+    function showDifficultySelection() {
+      hideAllSections();
+      document.getElementById('difficulty-selection').style.display = 'block';
+    }
+
+    // 開始指定難度的練習
+    function startPractice(level) {
+      currentLevel = level;
+      BATCH_SIZE = (level === '400') ? 10 : 20;
+      
+      hideAllSections();
+      document.getElementById('typing-practice').style.display = 'block';
+      
+      // 設定標題
+      const title = level === '400' ? '400 單字練習' : 
+                   level === '1200' ? '1200 單字練習' :
+                   level === '2000' ? '2000 單字練習' : '混合模式練習';
+      document.getElementById('practice-title').textContent = title;
+      
+      // 重置統計
+      correctCount = 0;
+      wrongCount = 0;
+      questionCount = 0;
+      wrongList = [];
+      updateStats();
+      
+      loadNewQuestion();
+    }
+
+    // 載入新題目
+    async function loadNewQuestion() {
+      try {
+        const url = currentLevel === 'mixed' ? '/api/practice/typing' : `/api/practice/typing?level=${currentLevel}`;
+        const response = await fetch(url, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await response.json();
+        
+        currentQuestion = data;
+        document.getElementById('sentence').textContent = data.sentence;
+        document.getElementById('meaning').textContent = data.meaning;
+        document.getElementById('word-length').textContent = `單字長度：${data.wordLength} 個字母`;
+        
+        // 清空輸入框和結果
+        document.getElementById('user-input').value = '';
+        document.getElementById('result-area').style.display = 'none';
+        document.getElementById('answer-area').style.display = 'block';
+        document.getElementById('user-input').focus();
+        
+      } catch (error) {
+        console.error('載入題目失敗:', error);
+        alert('載入題目失敗，請重試');
+      }
+    }
+
+    // 提交答案
+    async function submitAnswer() {
+      const userInput = document.getElementById('user-input').value.trim();
+      if (!userInput) {
+        alert('請輸入答案');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/practice/typing/answer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            id: currentQuestion.id,
+            userInput: userInput
+          })
+        });
+        
+        const result = await response.json();
+        
+        // 顯示結果
+        const resultMessage = document.getElementById('result-message');
+        const correctAnswer = document.getElementById('correct-answer');
+        
+        questionCount++;
+        
+        if (result.correct) {
+          resultMessage.textContent = '🎉 太棒了！答對了！';
+          resultMessage.className = 'result-success';
+          correctCount++;
+        } else {
+          resultMessage.textContent = `😅 答錯了！正確答案是「${result.correctAnswer}」`;
+          resultMessage.className = 'result-error';
+          wrongCount++;
+          // 收集錯題
+          wrongList.push({
+            id: currentQuestion.id,
+            sentence: currentQuestion.sentence,
+            meaning: currentQuestion.meaning,
+            wordLength: currentQuestion.wordLength,
+            correctAnswer: result.correctAnswer
+          });
+        }
+        
+        correctAnswer.textContent = `正確答案：${result.correctAnswer}`;
+        
+        // 隱藏輸入區，顯示結果區
+        document.getElementById('answer-area').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        
+        updateStats(); // 更新統計
+        
+        // 檢查是否該進入錯題複習
+        if (questionCount % BATCH_SIZE === 0 && wrongList.length > 0) {
+          document.getElementById('next-question').textContent = '開始錯題複習';
+        }
+        
+      } catch (error) {
+        console.error('提交答案失敗:', error);
+        alert('提交答案失敗，請重試');
+      }
+    }
+
+    // 下一題
+    function nextQuestion() {
+      // 檢查是否該進入錯題複習
+      if (questionCount % BATCH_SIZE === 0 && wrongList.length > 0) {
+        startWrongPractice();
+      } else {
+        loadNewQuestion();
+      }
+    }
+
+    // 隱藏所有區塊
+    function hideAllSections() {
+      document.getElementById('main').style.display = 'none';
+      document.getElementById('typing-practice').style.display = 'none';
+      document.getElementById('difficulty-selection').style.display = 'none';
+      document.getElementById('srs-settings').style.display = 'none';
+      document.getElementById('srs-learning').style.display = 'none';
+      document.getElementById('word-lists').style.display = 'none';
+      document.getElementById('word-display').style.display = 'none';
+      document.getElementById('progress-display').style.display = 'none';
+      document.getElementById('review-mode').style.display = 'none';
+    }
+
+    // 顯示主選單
+    function showMainMenu() {
+      hideAllSections();
+      document.getElementById('main').style.display = 'block';
+    }
+
+    // === SRS 學習功能 ===
+    let srsCurrentQuestion = null;
+    let srsTodayCount = 0;
+    let srsCurrentLevel = 'mixed';
+    let srsDailyLimit = 10;
+    let srsNewWordsToday = 0;
+
+    // 顯示 SRS 設定介面
+    function showSrsLearning() {
+      hideAllSections();
+      document.getElementById('srs-settings').style.display = 'block';
+    }
+
+    // 選擇 SRS 難度等級
+    function selectSrsLevel(level) {
+      srsCurrentLevel = level;
+      
+      // 更新按鈕視覺狀態
+      document.querySelectorAll('#srs-settings button[id^="srs-"]').forEach(btn => {
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-primary');
+      });
+      const selectedBtn = document.getElementById(`srs-${level}`);
+      selectedBtn.classList.remove('btn-primary');
+      selectedBtn.classList.add('btn-success');
+      
+      const title = level === '400' ? '400 單字 SRS 學習' : 
+                   level === '1200' ? '1200 單字 SRS 學習' :
+                   level === '2000' ? '2000 單字 SRS 學習' : '混合模式 SRS 學習';
+      document.getElementById('srs-title').textContent = title;
+    }
+
+    // 開始 SRS 學習會話
+    async function startSrsSession() {
+      const dailyLimit = parseInt(document.getElementById('srs-daily-limit').value);
+      if (dailyLimit < 5) {
+        alert('每日新單字數量不能少於 5 個');
+        return;
+      }
+      
+      srsDailyLimit = dailyLimit;
+      srsNewWordsToday = 0;
+      
+      document.getElementById('srs-daily-goal').textContent = dailyLimit;
+      
+      hideAllSections();
+      document.getElementById('srs-learning').style.display = 'block';
+      await updateSrsStatus();
+      await startSrsLearning();
+    }
+
+    // 更新 SRS 狀態統計
+    async function updateSrsStatus() {
+      try {
+        // 取得待複習單字數量
+        const reviewResponse = await fetch('/api/review', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const reviewWords = await reviewResponse.json();
+        
+        // 取得新單字數量（根據選擇的難度）
+        const levelParam = srsCurrentLevel === 'mixed' ? '' : `?level=${srsCurrentLevel}`;
+        const newWordsResponse = await fetch(`/api/review/new-words-count${levelParam}`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const newWordsData = await newWordsResponse.json();
+        
+        document.getElementById('srs-review-count').textContent = reviewWords.length || 0;
+        document.getElementById('srs-new-count').textContent = newWordsData.count || 0;
+        document.getElementById('srs-today-count').textContent = srsTodayCount;
+        
+      } catch (error) {
+        console.error('更新 SRS 狀態失敗:', error);
+      }
+    }
+
+    // 開始 SRS 學習
+    async function startSrsLearning() {
+      try {
+        // 隱藏控制按鈕，顯示題目區域
+        document.getElementById('srs-controls').style.display = 'none';
+        document.getElementById('srs-question-area').style.display = 'block';
+        document.getElementById('srs-answer-area').style.display = 'block';
+        
+        await loadSrsQuestion();
+      } catch (error) {
+        console.error('開始 SRS 學習失敗:', error);
+        alert('開始學習失敗，請重試');
+      }
+    }
+
+    // 載入 SRS 題目
+    async function loadSrsQuestion() {
+      try {
+        // 檢查是否達到每日新單字限制
+        if (srsNewWordsToday >= srsDailyLimit) {
+          // 只處理複習單字
+          const reviewResponse = await fetch('/api/review/typing?reviewOnly=true', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          
+          if (reviewResponse.ok) {
+            const data = await reviewResponse.json();
+            displaySrsQuestion(data, false);
+          } else {
+            showDailyCompleted();
+          }
+          return;
+        }
+        
+        // 正常獲取單字（復習優先，然後新單字）
+        const levelParam = srsCurrentLevel === 'mixed' ? '' : `?level=${srsCurrentLevel}`;
+        const reviewResponse = await fetch(`/api/review/typing${levelParam}`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        
+        if (reviewResponse.ok) {
+          const data = await reviewResponse.json();
+          displaySrsQuestion(data, data.isNew);
+        } else {
+          showDailyCompleted();
+        }
+        
+      } catch (error) {
+        console.error('載入 SRS 題目失敗:', error);
+        alert('載入題目失敗，請重試');
+      }
+    }
+
+    // 顯示 SRS 題目
+    function displaySrsQuestion(data, isNew) {
+      srsCurrentQuestion = data;
+      
+      document.getElementById('srs-sentence').textContent = data.sentence;
+      document.getElementById('srs-meaning').textContent = data.meaning;
+      document.getElementById('srs-word-length').textContent = `單字長度：${data.wordLength} 個字母`;
+      
+      // 根據是否為新單字顯示不同狀態
+      if (isNew) {
+        document.getElementById('srs-word-status').textContent = '🆕 新單字';
+        document.getElementById('srs-word-status').style.color = '#43e97b';
+      } else {
+        document.getElementById('srs-word-status').textContent = '🔄 複習單字';
+        document.getElementById('srs-word-status').style.color = '#7C4DFF';
+      }
+      
+      // 清空輸入框和結果
+      document.getElementById('srs-user-input').value = '';
+      document.getElementById('srs-result-area').style.display = 'none';
+      document.getElementById('srs-answer-area').style.display = 'block';
+      document.getElementById('srs-user-input').focus();
+    }
+
+    // 顯示每日完成狀態
+    function showDailyCompleted() {
+      document.getElementById('srs-question-area').innerHTML = `
+        <h3>🎉 今日學習完成！</h3>
+        <p>已完成 ${srsNewWordsToday} 個新單字的學習</p>
+        <p>總共答題 ${srsTodayCount} 次</p>
+        <div style="margin-top: 1.5em;">
+          <button onclick="continueExtraLearning()">繼續學習</button>
+          <button onclick="finishSrsSession()">結束學習</button>
+        </div>
+      `;
+      document.getElementById('srs-answer-area').style.display = 'none';
+      document.getElementById('srs-result-area').style.display = 'none';
+      document.getElementById('srs-controls').style.display = 'none';
+      document.getElementById('srs-question-area').style.display = 'block';
+    }
+
+    // 繼續額外學習
+    function continueExtraLearning() {
+      srsNewWordsToday = 0; // 重置計數，允許學習更多新單字
+      document.getElementById('srs-question-area').style.display = 'block';
+      document.getElementById('srs-answer-area').style.display = 'block';
+      loadSrsQuestion();
+    }
+
+    // 結束 SRS 學習會話
+    function finishSrsSession() {
+      showMainMenu();
+    }
+
+    // 提交 SRS 答案
+    async function submitSrsAnswer() {
+      const userInput = document.getElementById('srs-user-input').value.trim();
+      if (!userInput) {
+        alert('請輸入答案');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/review/typing/answer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            word_id: srsCurrentQuestion.id,
+            userInput: userInput
+          })
+        });
+        
+        const result = await response.json();
+        
+        // 顯示結果
+        const resultMessage = document.getElementById('srs-result-message');
+        const correctAnswer = document.getElementById('srs-correct-answer');
+        const nextReview = document.getElementById('srs-next-review');
+        
+        if (result.correct) {
+          resultMessage.textContent = '🎉 太棒了！答對了！';
+          resultMessage.className = 'result-success';
+        } else {
+          resultMessage.textContent = `😅 答錯了！正確答案是「${result.correctAnswer}」`;
+          resultMessage.className = 'result-error';
+        }
+        
+        correctAnswer.textContent = `正確答案：${result.correctAnswer}`;
+        
+        // 顯示下次複習時間（如果有的話）
+        if (result.nextReviewTime) {
+          const nextDate = new Date(result.nextReviewTime);
+          nextReview.textContent = `下次複習：${nextDate.toLocaleDateString()} ${nextDate.toLocaleTimeString()}`;
+        }
+        
+        // 隱藏輸入區，顯示結果區
+        document.getElementById('srs-answer-area').style.display = 'none';
+        document.getElementById('srs-result-area').style.display = 'block';
+        
+        // 更新統計
+        srsTodayCount++;
+        if (srsCurrentQuestion.isNew) {
+          srsNewWordsToday++; // 新單字計入每日數量（不論對錯）
+        }
+        await updateSrsStatus();
+        
+        // 檢查是否達到每日目標
+        if (srsNewWordsToday >= srsDailyLimit) {
+          // 延遲一點時間讓用戶看到結果，然後顯示完成畫面
+          setTimeout(() => {
+            showDailyCompleted();
+          }, 2000);
+        }
+        
+      } catch (error) {
+        console.error('提交 SRS 答案失敗:', error);
+        alert('提交答案失敗，請重試');
+      }
+    }
+
+    // SRS 下一題
+    function nextSrsQuestion() {
+      loadSrsQuestion();
+    }
+
+    // === 單字列表功能 ===
+    let currentWordLevel = null;
+    let currentWordPage = 1;
+    let wordsPerPage = 20;
+    let allWords = [];
+    let filteredWords = [];
+
+    // 顯示單字列表選擇頁面
+    function showWordLists() {
+      hideAllSections();
+      document.getElementById('word-lists').style.display = 'block';
+    }
+
+    // 根據等級顯示單字
+    async function showWordsByLevel(level) {
+      currentWordLevel = level;
+      currentWordPage = 1;
+      
+      hideAllSections();
+      document.getElementById('word-display').style.display = 'block';
+      document.getElementById('word-display-title').textContent = `${level} 單字列表`;
+      
+      try {
+        const response = await fetch(`/api/words?level=${level}`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const words = await response.json();
+        
+        allWords = words;
+        filteredWords = words;
+        displayWords();
+        setupPagination();
+        setupSearch();
+        
+        document.getElementById('word-stats').textContent = `共 ${words.length} 個單字`;
+        
+      } catch (error) {
+        console.error('載入單字失敗:', error);
+        alert('載入單字失敗，請重試');
+      }
+    }
+
+    // 顯示單字卡片
+    function displayWords() {
+      const startIndex = (currentWordPage - 1) * wordsPerPage;
+      const endIndex = startIndex + wordsPerPage;
+      const wordsToShow = filteredWords.slice(startIndex, endIndex);
+      
+      const container = document.getElementById('word-container');
+      container.innerHTML = '';
+      
+      wordsToShow.forEach(word => {
+        const wordCard = document.createElement('div');
+        wordCard.className = 'word-card';
+        wordCard.innerHTML = `
+          <div class="word-title">${word.word}</div>
+          <div class="word-definition">${word.definition || '無定義'}</div>
+          ${word.sentence ? `<div class="word-sentence">${word.sentence}</div>` : ''}
+        `;
+        container.appendChild(wordCard);
+      });
+    }
+
+    // 設定分頁
+    function setupPagination() {
+      const totalPages = Math.ceil(filteredWords.length / wordsPerPage);
+      const paginationContainer = document.getElementById('pagination');
+      paginationContainer.innerHTML = '';
+      
+      if (totalPages <= 1) return;
+      
+      // 上一頁按鈕
+      if (currentWordPage > 1) {
+        const prevBtn = document.createElement('button');
+        prevBtn.textContent = '‹ 上一頁';
+        prevBtn.className = 'pagination-btn';
+        prevBtn.onclick = () => {
+          currentWordPage--;
+          displayWords();
+          setupPagination();
+        };
+        paginationContainer.appendChild(prevBtn);
+      }
+      
+      // 頁碼按鈕
+      const startPage = Math.max(1, currentWordPage - 2);
+      const endPage = Math.min(totalPages, currentWordPage + 2);
+      
+      for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.textContent = i;
+        pageBtn.className = 'pagination-btn' + (i === currentWordPage ? ' active' : '');
+        pageBtn.onclick = () => {
+          currentWordPage = i;
+          displayWords();
+          setupPagination();
+        };
+        paginationContainer.appendChild(pageBtn);
+      }
+      
+      // 下一頁按鈕
+      if (currentWordPage < totalPages) {
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = '下一頁 ›';
+        nextBtn.className = 'pagination-btn';
+        nextBtn.onclick = () => {
+          currentWordPage++;
+          displayWords();
+          setupPagination();
+        };
+        paginationContainer.appendChild(nextBtn);
+      }
+    }
+
+    // 設定搜尋功能
+    function setupSearch() {
+      const searchInput = document.getElementById('word-search');
+      searchInput.value = '';
+      
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        if (searchTerm === '') {
+          filteredWords = allWords;
+        } else {
+          filteredWords = allWords.filter(word => 
+            word.word.toLowerCase().includes(searchTerm) ||
+            (word.definition && word.definition.toLowerCase().includes(searchTerm))
+          );
+        }
+        
+        currentWordPage = 1;
+        displayWords();
+        setupPagination();
+        
+        document.getElementById('word-stats').textContent = 
+          `共 ${filteredWords.length} 個單字 ${searchTerm ? `(搜尋: "${searchTerm}")` : ''}`;
+      });
+    }
+
+    let reviewingWrong = false;
+
+    // 錯題複習功能
+    function startWrongPractice() {
+      if (wrongList.length === 0) {
+        alert('沒有錯題需要複習，繼續練習新題目');
+        loadNewQuestion();
+        return;
+      }
+      reviewingWrong = true;
+      const practiceDiv = document.getElementById('typing-practice');
+      practiceDiv.innerHTML = `
+        <h2>錯題複習</h2>
+        <div id="wrong-question-area">
+          <p id="wrong-sentence" class="sentence"></p>
+          <p id="wrong-meaning" class="meaning"></p>
+          <p id="wrong-word-length" class="word-length"></p>
+        </div>
+        <div id="wrong-answer-area">
+          <input type="text" id="wrong-user-input" placeholder="請輸入答案..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <button id="wrong-submit-answer">提交答案</button>
+        </div>
+        <div id="wrong-result-area" style="display: none;">
+          <p id="wrong-result-message"></p>
+          <p id="wrong-correct-answer"></p>
+          <button id="wrong-next-question">下一題</button>
+        </div>
+        <button id="back-to-main">返回主選單</button>
+        <div class="stats">
+          <div class="stat">答對 <span id="wrong-stat-correct">0</span></div>
+          <div class="stat">答錯 <span id="wrong-stat-wrong">0</span></div>
+          <div class="stat">正確率 <span id="wrong-stat-rate">0%</span></div>
+        </div>
+      `;
+      document.getElementById('wrong-user-input').focus();
+      document.getElementById('wrong-submit-answer').addEventListener('click', submitWrongAnswer);
+      document.getElementById('wrong-next-question').addEventListener('click', nextWrongQuestion);
+      document.getElementById('back-to-main').addEventListener('click', showMainMenu);
+      document.getElementById('wrong-user-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          submitWrongAnswer();
+        }
+      });
+      loadNewWrongQuestion();
+    }
+
+    async function loadNewWrongQuestion() {
+      if (wrongList.length === 0) {
+        document.getElementById('wrong-result-area').innerHTML = '錯題複習完成！';
+        return;
+      }
+      const w = wrongList[0];
+      document.getElementById('wrong-sentence').textContent = w.sentence;
+      document.getElementById('wrong-meaning').textContent = w.meaning;
+      document.getElementById('wrong-word-length').textContent = `單字長度：${w.wordLength} 個字母`;
+      document.getElementById('wrong-result-area').style.display = 'none';
+      document.getElementById('wrong-answer-area').style.display = 'block';
+      document.getElementById('wrong-user-input').value = '';
+    }
+
+    async function submitWrongAnswer() {
+      const userInput = document.getElementById('wrong-user-input').value.trim();
+      if (!userInput) {
+        alert('請輸入答案');
+        return;
+      }
+      const w = wrongList[0];
+      try {
+        const response = await fetch('/api/practice/typing/answer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            id: w.id,
+            userInput: userInput
+          })
+        });
+        const result = await response.json();
+        document.getElementById('wrong-result-message').textContent = result.correct ? '🎉 太棒了！答對了！' : `😅 答錯了！正確答案是「${result.correctAnswer}」`;
+        document.getElementById('wrong-correct-answer').textContent = `正確答案：${result.correctAnswer}`;
+        document.getElementById('wrong-result-area').style.display = 'block';
+        document.getElementById('wrong-answer-area').style.display = 'none';
+        if (result.correct) {
+          wrongList.shift(); // 移除已經答對的題目
+          document.getElementById('wrong-stat-correct').textContent = parseInt(document.getElementById('wrong-stat-correct').textContent) + 1;
+        } else {
+          document.getElementById('wrong-stat-wrong').textContent = parseInt(document.getElementById('wrong-stat-wrong').textContent) + 1;
+        }
+        document.getElementById('wrong-stat-rate').textContent = `${((parseInt(document.getElementById('wrong-stat-correct').textContent) / (parseInt(document.getElementById('wrong-stat-correct').textContent) + parseInt(document.getElementById('wrong-stat-wrong').textContent))) * 100).toFixed(0)}%`;
+      } catch (error) {
+        console.error('提交錯題答案失敗:', error);
+        alert('提交錯題答案失敗，請重試');
+      }
+    }
+
+    function nextWrongQuestion() {
+      if (wrongList.length === 0) {
+        // 錯題複習完成，顯示選項
+        hideAllSections();
+        document.getElementById('typing-practice').style.display = 'block';
+        document.getElementById('typing-practice').innerHTML = `
+          <h2>錯題複習完成！</h2>
+          <div class="stats">
+            <div class="stat">答對 <span>${correctCount}</span></div>
+            <div class="stat">答錯 <span>${wrongCount}</span></div>
+            <div class="stat">正確率 <span>${correctCount + wrongCount > 0 ? Math.round(correctCount / (correctCount + wrongCount) * 100) : 0}%</span></div>
+          </div>
+          <p>你想要繼續練習嗎？</p>
+          <button id="continue-practice">繼續練習 ${BATCH_SIZE} 題</button>
+          <button id="back-to-main">返回主選單</button>
+          <button id="back-to-difficulty">選擇其他難度</button>
+        `;
+        
+        // 綁定事件
+        document.getElementById('continue-practice').addEventListener('click', function() {
+          // 繼續練習，重新設定界面
+          document.getElementById('typing-practice').innerHTML = `
+            <h2 id="practice-title">${currentLevel === '400' ? '400 單字練習' : currentLevel === '1200' ? '1200 單字練習' : '混合模式練習'}</h2>
+            <div id="question-area">
+              <p id="sentence" class="sentence"></p>
+              <p id="meaning" class="meaning"></p>
+              <p id="word-length" class="word-length"></p>
+            </div>
+            <div id="answer-area">
+              <input type="text" id="user-input" placeholder="請輸入答案..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button id="submit-answer">提交答案</button>
+            </div>
+            <div id="result-area" style="display: none;">
+              <p id="result-message"></p>
+              <p id="correct-answer"></p>
+              <button id="next-question">下一題</button>
+            </div>
+            <button id="back-to-main">返回主選單</button>
+            <div class="stats">
+              <div class="stat">答對 <span id="stat-correct">${correctCount}</span></div>
+              <div class="stat">答錯 <span id="stat-wrong">${wrongCount}</span></div>
+              <div class="stat">正確率 <span id="stat-rate">${correctCount + wrongCount > 0 ? Math.round(correctCount / (correctCount + wrongCount) * 100) : 0}%</span></div>
+            </div>
+          `;
+          // 重新綁定事件
+          document.getElementById('submit-answer').addEventListener('click', submitAnswer);
+          document.getElementById('next-question').addEventListener('click', nextQuestion);
+          document.getElementById('back-to-main').addEventListener('click', showMainMenu);
+          // Enter 鍵事件已由 document 統一處理，不需要重複綁定
+          loadNewQuestion();
+        });
+        
+        document.getElementById('back-to-main').addEventListener('click', showMainMenu);
+        document.getElementById('back-to-difficulty').addEventListener('click', showDifficultySelection);
+        
+      } else {
+        loadNewWrongQuestion();
+      }
+    }
+
+    // 事件監聽器
+    document.addEventListener('DOMContentLoaded', function() {
+      // 打字填空練習按鈕
+      const typingPracticeBtn = document.getElementById('typing-practice-btn');
+      if (typingPracticeBtn) {
+        typingPracticeBtn.addEventListener('click', showDifficultySelection);
+      }
+      
+      // SRS 學習按鈕
+      const srsLearningBtn = document.getElementById('srs-learning-btn');
+      if (srsLearningBtn) {
+        srsLearningBtn.addEventListener('click', showSrsLearning);
+      }
+      
+      // SRS 開始學習按鈕
+      const srsStartBtn = document.getElementById('srs-start-learning');
+      if (srsStartBtn) {
+        srsStartBtn.addEventListener('click', startSrsLearning);
+      }
+      
+      // SRS 提交答案按鈕
+      const srsSubmitBtn = document.getElementById('srs-submit-answer');
+      if (srsSubmitBtn) {
+        srsSubmitBtn.addEventListener('click', submitSrsAnswer);
+      }
+      
+      // SRS 下一題按鈕
+      const srsNextBtn = document.getElementById('srs-next-question');
+      if (srsNextBtn) {
+        srsNextBtn.addEventListener('click', nextSrsQuestion);
+      }
+      
+      // 提交答案按鈕
+      const submitAnswerBtn = document.getElementById('submit-answer');
+      if (submitAnswerBtn) {
+        submitAnswerBtn.addEventListener('click', submitAnswer);
+      }
+      
+      // 下一題按鈕
+      const nextQuestionBtn = document.getElementById('next-question');
+      if (nextQuestionBtn) {
+        nextQuestionBtn.addEventListener('click', nextQuestion);
+      }
+      
+      // 返回主選單按鈕
+      const backToMainBtn = document.getElementById('back-to-main');
+      if (backToMainBtn) {
+        backToMainBtn.addEventListener('click', showMainMenu);
+      }
+      
+      // 錯題複習按鈕
+      const wrongPracticeBtn = document.getElementById('wrong-next-question');
+      if (wrongPracticeBtn) {
+        wrongPracticeBtn.addEventListener('click', nextWrongQuestion);
+      }
+
+      // 移除重複的 Enter 事件監聽器，統一由 document 事件處理
+
+
+      // 讓帳號或密碼欄位按下 Enter 都能登入
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+
+      function tryLoginOnEnter(e) {
+        if (e.key === 'Enter') {
+          login();
+        }
+      }
+
+      usernameInput.addEventListener('keypress', tryLoginOnEnter);
+      passwordInput.addEventListener('keypress', tryLoginOnEnter);
+
+      // Enter 鍵處理：先檢查答案，再進入下一題
+      document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          // SRS 學習模式
+          if (document.getElementById('srs-learning').style.display !== 'none') {
+            if (document.getElementById('srs-answer-area').style.display !== 'none') {
+              submitSrsAnswer();
+            } else if (document.getElementById('srs-result-area').style.display !== 'none') {
+              nextSrsQuestion();
+            }
+          }
+          // 正常練習模式
+          else if (document.getElementById('typing-practice').style.display !== 'none') {
+            if (document.getElementById('answer-area').style.display !== 'none') {
+              submitAnswer();
+            } else if (document.getElementById('result-area').style.display !== 'none') {
+              nextQuestion();
+            }
+          }
+          // 錯題複習模式
+          else if (document.getElementById('wrong-answer-area') && document.getElementById('wrong-answer-area').style.display !== 'none') {
+            submitWrongAnswer();
+          } else if (document.getElementById('wrong-result-area') && document.getElementById('wrong-result-area').style.display !== 'none') {
+            nextWrongQuestion();
+          }
+        }
+      });
+      
+      // 事件監聽器已經統一由 document 處理，避免重複綁定
+    });
+  </script>
+</body>
+</html>

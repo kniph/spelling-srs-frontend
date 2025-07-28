@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>使用者管理 - SRS 學習系統</title>
+  
+  <!-- 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- 共用樣式 -->
+  <link rel="stylesheet" href="/shared/css/common.css">
+  
+  <!-- 頁面專用樣式 -->
+  <style>
+    /* 使用者管理頁面樣式 */
+    .users-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-xl);
+      flex-wrap: wrap;
+      gap: var(--spacing-md);
+    }
+
+    .users-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+    }
+
+    .users-filters {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .users-search {
+      min-width: 250px;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: var(--font-size-sm);
+    }
+
+    .users-filter-select {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: var(--font-size-sm);
+      min-width: 120px;
+    }
+
+    /* 使用者表格 */
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      border-radius: var(--radius-large);
+      overflow: hidden;
+      box-shadow: var(--shadow-light);
+    }
+
+    .users-table th,
+    .users-table td {
+      padding: var(--spacing-md);
+      text-align: left;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .users-table th {
+      background: var(--gray-50);
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: var(--font-size-sm);
+    }
+
+    .users-table tr:hover {
+      background: var(--gray-50);
+    }
+
+    .users-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* 狀態標籤 */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius);
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      gap: var(--spacing-xs);
+    }
+
+    .status-badge.active {
+      background: rgba(67, 233, 123, 0.1);
+      color: var(--success);
+    }
+
+    .status-badge.inactive {
+      background: rgba(255, 82, 82, 0.1);
+      color: var(--error);
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius);
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      background: var(--gray-100);
+      color: var(--text-secondary);
+    }
+
+    .role-badge.super_admin {
+      background: rgba(124, 77, 255, 0.1);
+      color: var(--primary);
+    }
+
+    .role-badge.branch_admin {
+      background: rgba(33, 150, 243, 0.1);
+      color: var(--info);
+    }
+
+    .role-badge.teacher {
+      background: rgba(255, 152, 0, 0.1);
+      color: var(--warning);
+    }
+
+    .role-badge.student {
+      background: rgba(67, 233, 123, 0.1);
+      color: var(--success);
+    }
+
+    /* 動作按鈕 */
+    .action-buttons {
+      display: flex;
+      gap: var(--spacing-xs);
+    }
+
+    .btn-icon {
+      padding: var(--spacing-xs);
+      min-width: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 模態框樣式 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--white);
+      border-radius: var(--radius-large);
+      box-shadow: var(--shadow-heavy);
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: var(--spacing-xl);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: var(--font-size-xl);
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: var(--spacing-xs);
+    }
+
+    .modal-body {
+      padding: var(--spacing-xl);
+    }
+
+    .modal-footer {
+      padding: var(--spacing-xl);
+      border-top: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--spacing-md);
+    }
+
+    /* 分頁樣式 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-xl);
+    }
+
+    .pagination-btn {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      color: var(--text-secondary);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      transition: var(--transition);
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background: var(--gray-50);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination-btn.active {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+
+    .pagination-info {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    /* 載入狀態 */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-2xl);
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--gray-300);
+      border-top: 3px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: var(--spacing-md);
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* 響應式設計 */
+    @media (max-width: 768px) {
+      .users-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .users-filters {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .users-search,
+      .users-filter-select {
+        min-width: auto;
+      }
+      
+      .users-table {
+        font-size: var(--font-size-sm);
+      }
+      
+      .users-table th,
+      .users-table td {
+        padding: var(--spacing-sm);
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+      }
+      
+      .modal-content {
+        width: 95%;
+        margin: var(--spacing-md);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 頁面內容將由JavaScript動態生成 -->
+
+  <!-- 配置文件 -->
+  <script src="../shared/js/config.js"></script>
+  
+  <!-- 共用腳本 -->
+  <script src="/shared/js/common.js"></script>
+  <script src="/shared/components/navigation.js"></script>
+  
+  <!-- 頁面專用腳本 -->
+  <script>
+    // 使用者管理狀態
+    let currentUsersPage = 1;
+    let currentEditingUserId = null;
+    let currentUsersFilters = {
+      search: '',
+      role: '',
+      status: ''
+    };
+
+    /**
+     * 載入使用者列表
+     */
+    async function loadUsers(page = 1) {
+      const container = document.getElementById('users-table-container');
+      const search = document.getElementById('user-search')?.value || '';
+      const role = document.getElementById('role-filter')?.value || '';
+      const status = document.getElementById('status-filter')?.value || '';
+
+      // 更新當前狀態
+      currentUsersPage = page;
+      currentUsersFilters = { search, role, status };
+
+      // 顯示載入狀態
+      showLoading(container);
+
+      try {
+        const params = new URLSearchParams();
+        params.append('page', page);
+        params.append('limit', 20);
+        if (search) params.append('search', search);
+        if (role) params.append('role', role);
+        if (status) params.append('is_active', status);
+
+        const response = await apiRequest(`/api/admin/users?${params}`);
+
+        if (response && response.ok) {
+          const data = await response.json();
+          renderUsersTable(data.users, data.pagination);
+        } else {
+          throw new Error('載入使用者列表失敗');
+        }
+      } catch (error) {
+        console.error('載入使用者列表錯誤:', error);
+        container.innerHTML = `
+          <div class="alert alert-error" style="text-align: center; padding: 2rem;">
+            載入使用者列表時發生錯誤: ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * 渲染使用者表格
+     */
+    function renderUsersTable(users, pagination) {
+      const container = document.getElementById('users-table-container');
+      
+      if (!users || users.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+            沒有找到符合條件的使用者
+          </div>
+        `;
+        return;
+      }
+
+      const roleNames = {
+        'super_admin': '超級管理員',
+        'branch_admin': '分校主任',
+        'teacher': '教師',
+        'student': '學生'
+      };
+
+      let html = `
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>帳號</th>
+              <th>姓名</th>
+              <th>角色</th>
+              <th>機構</th>
+              <th>狀態</th>
+              <th>最後登入</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      users.forEach(user => {
+        const statusClass = user.is_active ? 'active' : 'inactive';
+        const statusText = user.is_active ? '啟用' : '停用';
+        const roleClass = user.role_name || 'student';
+        const roleName = roleNames[roleClass] || user.role_display_name || '學生';
+        const lastLogin = user.last_login_at ? formatTimeAgo(user.last_login_at) : '從未登入';
+
+        html += `
+          <tr>
+            <td>
+              <div style="font-weight: 600;">${user.username}</div>
+              ${user.email ? `<div style="font-size: var(--font-size-xs); color: var(--text-secondary);">${user.email}</div>` : ''}
+            </td>
+            <td>${user.full_name || '-'}</td>
+            <td><span class="role-badge ${roleClass}">${roleName}</span></td>
+            <td>${user.organization_name || '-'}</td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td>${lastLogin}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-primary" onclick="editUser(${user.id})">編輯</button>
+                ${user.is_active ? 
+                  `<button class="btn btn-sm btn-warning" onclick="toggleUserStatus(${user.id}, false)">停用</button>` :
+                  `<button class="btn btn-sm btn-success" onclick="toggleUserStatus(${user.id}, true)">啟用</button>`
+                }
+                <button class="btn btn-sm btn-secondary" onclick="disableUser(${user.id})">軟刪除</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteUserPermanently(${user.id})">刪除</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      // 添加分頁
+      if (pagination && pagination.total_pages > 1) {
+        html += renderPagination(pagination);
+      }
+
+      container.innerHTML = html;
+    }
+
+    /**
+     * 渲染分頁
+     */
+    function renderPagination(pagination) {
+      const { current_page, total_pages, total } = pagination;
+      let html = `
+        <div class="pagination">
+          <button class="pagination-btn" ${current_page <= 1 ? 'disabled' : ''} onclick="loadUsers(${current_page - 1})">
+            上一頁
+          </button>
+      `;
+
+      // 頁碼按鈕
+      for (let i = Math.max(1, current_page - 2); i <= Math.min(total_pages, current_page + 2); i++) {
+        html += `
+          <button class="pagination-btn ${i === current_page ? 'active' : ''}" onclick="loadUsers(${i})">
+            ${i}
+          </button>
+        `;
+      }
+
+      html += `
+          <button class="pagination-btn" ${current_page >= total_pages ? 'disabled' : ''} onclick="loadUsers(${current_page + 1})">
+            下一頁
+          </button>
+          <span class="pagination-info">共 ${total} 筆記錄</span>
+        </div>
+      `;
+
+      return html;
+    }
+
+    /**
+     * 顯示創建使用者模態框
+     */
+    window.showCreateUserModal = async function() {
+      try {
+        currentEditingUserId = null;
+        
+        // 確保元素存在
+        const modalTitle = document.getElementById('user-modal-title');
+        const saveBtn = document.getElementById('save-user-btn');
+        const form = document.getElementById('user-form');
+        const activeCheckbox = document.getElementById('user-is-active');
+        const modal = document.getElementById('user-modal');
+        
+        if (!modalTitle || !saveBtn || !form || !activeCheckbox || !modal) {
+          console.error('模態框元素未找到:', {
+            modalTitle: !!modalTitle,
+            saveBtn: !!saveBtn,
+            form: !!form,
+            activeCheckbox: !!activeCheckbox,
+            modal: !!modal
+          });
+          showAlert('無法開啟新增使用者對話框，請重新整理頁面', 'error');
+          return;
+        }
+        
+        modalTitle.textContent = '新增使用者';
+        saveBtn.textContent = '建立使用者';
+        
+        // 重置表單
+        form.reset();
+        activeCheckbox.checked = true;
+        
+        // 載入機構和班級選項
+        await loadOrganizationsAndClasses();
+        
+        // 顯示模態框
+        modal.classList.add('show');
+        
+      } catch (error) {
+        console.error('顯示新增使用者模態框錯誤:', error);
+        showAlert('開啟新增使用者對話框時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 顯示批量匯入模態框
+     */
+    let batchImportData = [];
+    let currentBatchStep = 1;
+    
+    window.showBatchImportModal = function() {
+      // 重設狀態
+      currentBatchStep = 1;
+      batchImportData = [];
+      document.getElementById('csvFile').value = '';
+      
+      // 顯示第一步，隱藏其他步驟
+      document.getElementById('batch-import-step-1').style.display = 'block';
+      document.getElementById('batch-import-step-2').style.display = 'none';
+      document.getElementById('batch-import-step-3').style.display = 'none';
+      
+      // 重設按鈕狀態
+      document.getElementById('batch-back-button').style.display = 'none';
+      document.getElementById('batch-preview-button').style.display = 'none';
+      document.getElementById('batch-import-button').style.display = 'none';
+      document.getElementById('batch-done-button').style.display = 'none';
+      
+      document.getElementById('batch-import-modal').classList.add('show');
+    }
+    
+    window.closeBatchImportModal = function() {
+      document.getElementById('batch-import-modal').classList.remove('show');
+      // 重設狀態
+      currentBatchStep = 1;
+      batchImportData = [];
+    }
+
+    /**
+     * 處理檔案上傳
+     */
+    window.handleFileUpload = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // 檢查檔案大小 (1MB)
+      if (file.size > 1024 * 1024) {
+        showAlert('檔案大小不能超過 1MB', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const csv = e.target.result;
+          parseCSV(csv);
+        } catch (error) {
+          showAlert('檔案讀取失敗', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    /**
+     * 解析CSV資料
+     */
+    function parseCSV(csvText) {
+      const lines = csvText.trim().split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      
+      // 檢查必要欄位
+      const requiredFields = ['username', 'password', 'role_name'];
+      const optionalFields = ['email', 'full_name', 'phone'];
+      
+      for (const field of requiredFields) {
+        if (!headers.includes(field)) {
+          showAlert(`缺少必要欄位: ${field}`, 'error');
+          return;
+        }
+      }
+
+      batchImportData = [];
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue; // 跳過空行
+        
+        const values = lines[i].split(',').map(v => v.trim());
+        const user = {};
+        
+        headers.forEach((header, index) => {
+          user[header] = values[index] || '';
+        });
+        
+        // 基本驗證
+        user.errors = [];
+        if (!user.username) user.errors.push('缺少帳號');
+        if (!user.password) user.errors.push('缺少密碼');
+        if (!user.role_name) user.errors.push('缺少角色');
+        
+        batchImportData.push(user);
+      }
+
+      if (batchImportData.length === 0) {
+        showAlert('檔案中沒有有效的使用者資料', 'error');
+        return;
+      }
+
+      if (batchImportData.length > 100) {
+        showAlert('最多只能匯入100筆記錄', 'error');
+        return;
+      }
+
+      // 顯示預覽按鈕
+      document.getElementById('batch-preview-button').style.display = 'inline-block';
+    }
+
+    /**
+     * 預覽批量使用者
+     */
+    window.previewBatchUsers = function() {
+      // 切換到第二步
+      currentBatchStep = 2;
+      document.getElementById('batch-import-step-1').style.display = 'none';
+      document.getElementById('batch-import-step-2').style.display = 'block';
+      document.getElementById('batch-import-step-3').style.display = 'none';
+      
+      // 更新按鈕狀態
+      document.getElementById('batch-back-button').style.display = 'inline-block';
+      document.getElementById('batch-preview-button').style.display = 'none';
+      document.getElementById('batch-import-button').style.display = 'inline-block';
+      document.getElementById('batch-done-button').style.display = 'none';
+      
+      // 渲染預覽表格
+      const tbody = document.getElementById('preview-table-body');
+      tbody.innerHTML = '';
+      
+      let validCount = 0;
+      let errorCount = 0;
+      
+      batchImportData.forEach((user, index) => {
+        const isValid = user.errors.length === 0;
+        if (isValid) validCount++;
+        else errorCount++;
+        
+        const row = tbody.insertRow();
+        row.className = isValid ? 'success' : 'error';
+        
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${user.username}</td>
+          <td>${user.full_name || user.username}</td>
+          <td>${user.role_name}</td>
+          <td>${user.email || '-'}</td>
+          <td>${isValid ? '✅ 有效' : '❌ ' + user.errors.join(', ')}</td>
+        `;
+      });
+      
+      // 顯示驗證摘要
+      const summary = document.getElementById('validation-summary');
+      summary.innerHTML = `
+        <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius); border-left: 4px solid var(--info);">
+          <h5 style="margin-bottom: 0.5rem;">驗證摘要</h5>
+          <p>總計: ${batchImportData.length} 筆記錄</p>
+          <p style="color: var(--success);">有效: ${validCount} 筆</p>
+          <p style="color: var(--error);">錯誤: ${errorCount} 筆</p>
+          ${errorCount > 0 ? '<p><small>只有有效的記錄會被匯入</small></p>' : ''}
+        </div>
+      `;
+    }
+
+    /**
+     * 執行批量匯入
+     */
+    window.executeBatchImport = async function() {
+      // 過濾出有效的使用者
+      const validUsers = batchImportData.filter(user => user.errors.length === 0);
+      
+      if (validUsers.length === 0) {
+        showAlert('沒有有效的使用者可以匯入', 'error');
+        return;
+      }
+
+      // 切換到第三步
+      currentBatchStep = 3;
+      document.getElementById('batch-import-step-2').style.display = 'none';
+      document.getElementById('batch-import-step-3').style.display = 'block';
+      
+      // 更新按鈕狀態
+      document.getElementById('batch-back-button').style.display = 'none';
+      document.getElementById('batch-import-button').style.display = 'none';
+      document.getElementById('batch-done-button').style.display = 'inline-block';
+      
+      // 顯示載入狀態
+      const resultsDiv = document.getElementById('import-results');
+      resultsDiv.innerHTML = `
+        <div style="text-align: center; padding: 2rem;">
+          <div class="spinner" style="margin: 0 auto;"></div>
+          <p>正在匯入使用者資料...</p>
+        </div>
+      `;
+
+      try {
+        const response = await apiRequest('/api/admin/users/batch', {
+          method: 'POST',
+          body: JSON.stringify({ users: validUsers })
+        });
+
+        if (response && response.ok) {
+          const result = await response.json();
+          displayImportResults(result.results);
+          // 重新載入使用者列表
+          loadUsers(currentUsersPage);
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '批量匯入失敗');
+        }
+      } catch (error) {
+        console.error('批量匯入錯誤:', error);
+        resultsDiv.innerHTML = `
+          <div style="background: rgba(255, 82, 82, 0.1); padding: 1rem; border-radius: var(--radius); border-left: 4px solid var(--error);">
+            <h5 style="color: var(--error);">匯入失敗</h5>
+            <p>${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * 顯示匯入結果
+     */
+    function displayImportResults(results) {
+      const resultsDiv = document.getElementById('import-results');
+      const { success, errors, total } = results;
+      
+      let html = `
+        <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius); border-left: 4px solid var(--success); margin-bottom: 1rem;">
+          <h5 style="color: var(--success);">匯入完成</h5>
+          <p>總計處理: ${total} 筆記錄</p>
+          <p style="color: var(--success);">成功: ${success.length} 筆</p>
+          <p style="color: var(--error);">失敗: ${errors.length} 筆</p>
+        </div>
+      `;
+      
+      if (errors.length > 0) {
+        html += `
+          <div style="background: rgba(255, 82, 82, 0.1); padding: 1rem; border-radius: var(--radius); border-left: 4px solid var(--error);">
+            <h5 style="color: var(--error);">失敗記錄</h5>
+            <ul style="margin: 0; padding-left: 1.5rem;">
+        `;
+        errors.forEach(error => {
+          html += `<li>第${error.row}行 (${error.username}): ${error.error}</li>`;
+        });
+        html += '</ul></div>';
+      }
+      
+      resultsDiv.innerHTML = html;
+    }
+
+    /**
+     * 回到上一步
+     */
+    window.backToPreviousStep = function() {
+      if (currentBatchStep === 2) {
+        // 從第二步回到第一步
+        currentBatchStep = 1;
+        document.getElementById('batch-import-step-1').style.display = 'block';
+        document.getElementById('batch-import-step-2').style.display = 'none';
+        
+        // 更新按鈕狀態
+        document.getElementById('batch-back-button').style.display = 'none';
+        document.getElementById('batch-preview-button').style.display = batchImportData.length > 0 ? 'inline-block' : 'none';
+        document.getElementById('batch-import-button').style.display = 'none';
+      }
+    }
+
+    /**
+     * 下載CSV範本
+     */
+    window.downloadCSVTemplate = function() {
+      const csvContent = 'username,password,email,full_name,phone,role_name\n' +
+                        'user001,123456,user001@example.com,測試使用者一,0912345678,student\n' +
+                        'branch_admin001,123456,branch_admin001@example.com,測試機構管理員一,0912345678,branch_admin\n' +
+                        'teacher001,123456,teacher001@example.com,測試教師一,0987654321,teacher';
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'users_template.csv');
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    /**
+     * 編輯使用者
+     */
+    window.editUser = async function(userId) {
+      try {
+        // 載入使用者資料
+        const response = await apiRequest(`/api/admin/users/${userId}`);
+        if (!response || !response.ok) {
+          throw new Error('載入使用者資料失敗');
+        }
+        
+        const result = await response.json();
+        const user = result.user;
+        
+        currentEditingUserId = userId;
+        document.getElementById('user-modal-title').textContent = '編輯使用者';
+        document.getElementById('save-user-btn').textContent = '更新使用者';
+        
+        // 載入機構和班級選項
+        await loadOrganizationsAndClasses();
+        
+        // 填入使用者資料
+        document.getElementById('user-username').value = user.username || '';
+        document.getElementById('user-password').value = ''; // 編輯時密碼留空
+        document.getElementById('user-password').required = false; // 編輯時密碼非必填
+        document.getElementById('user-full-name').value = user.full_name || '';
+        document.getElementById('user-email').value = user.email || '';
+        document.getElementById('user-phone').value = user.phone || '';
+        document.getElementById('user-role').value = user.role_name || '';
+        document.getElementById('user-organization').value = user.organization_id || '';
+        document.getElementById('user-class').value = user.class_id || '';
+        document.getElementById('user-is-active').checked = user.is_active || false;
+        
+        // 顯示模態框
+        document.getElementById('user-modal').classList.add('show');
+        
+      } catch (error) {
+        console.error('載入使用者資料錯誤:', error);
+        showAlert('載入使用者資料時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 切換使用者狀態
+     */
+    window.toggleUserStatus = async function(userId, isActive) {
+      try {
+        const response = await apiRequest(`/api/admin/users/${userId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ is_active: isActive })
+        });
+
+        if (response && response.ok) {
+          showAlert(`使用者已${isActive ? '啟用' : '停用'}`, 'success');
+          loadUsers(currentUsersPage);
+        } else {
+          throw new Error('狀態更新失敗');
+        }
+      } catch (error) {
+        console.error('切換使用者狀態錯誤:', error);
+        showAlert('更新使用者狀態時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 軟刪除使用者（停用帳號）
+     */
+    window.disableUser = async function(userId) {
+      if (!confirm('確定要停用這個使用者嗎？帳號將被停用但資料保留，可以稍後重新啟用。')) {
+        return;
+      }
+
+      try {
+        const response = await apiRequest(`/api/admin/users/${userId}`, {
+          method: 'DELETE'
+        });
+
+        if (response && response.ok) {
+          showAlert('使用者已停用', 'success');
+          loadUsers(currentUsersPage);
+        } else {
+          throw new Error('停用失敗');
+        }
+      } catch (error) {
+        console.error('停用使用者錯誤:', error);
+        showAlert('停用使用者時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 硬刪除使用者（永久刪除）
+     */
+    window.deleteUserPermanently = async function(userId) {
+      if (!confirm('⚠️ 警告：確定要永久刪除這個使用者嗎？\n\n此操作會：\n• 完全移除使用者帳號\n• 刪除所有相關學習記錄\n• 無法恢復任何資料\n\n請再次確認是否繼續？')) {
+        return;
+      }
+
+      // 二次確認
+      if (!confirm('最後確認：真的要永久刪除這個使用者嗎？此操作無法撤銷！')) {
+        return;
+      }
+
+      try {
+        const response = await apiRequest(`/api/admin/users/${userId}/permanent`, {
+          method: 'DELETE'
+        });
+
+        if (response && response.ok) {
+          showAlert('使用者已永久刪除', 'success');
+          loadUsers(currentUsersPage);
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '刪除失敗');
+        }
+      } catch (error) {
+        console.error('永久刪除使用者錯誤:', error);
+        showAlert('永久刪除使用者時發生錯誤：' + error.message, 'error');
+      }
+    }
+
+    /**
+     * 載入機構和班級選項
+     */
+    async function loadOrganizationsAndClasses() {
+      try {
+        // 載入機構列表
+        const orgResponse = await apiRequest('/api/admin/organizations?limit=100');
+        if (orgResponse && orgResponse.ok) {
+          const orgResult = await orgResponse.json();
+          const organizations = orgResult.organizations || [];
+          
+          const orgSelect = document.getElementById('user-organization');
+          if (orgSelect) {
+            orgSelect.innerHTML = '<option value="">請選擇機構</option>';
+            organizations.forEach(org => {
+              orgSelect.innerHTML += `<option value="${org.id}">${org.name}</option>`;
+            });
+          }
+        } else {
+          console.error('載入機構列表失敗:', orgResponse?.status);
+        }
+        
+        // 載入班級列表
+        const classResponse = await apiRequest('/api/admin/classes?limit=100');
+        if (classResponse && classResponse.ok) {
+          const classResult = await classResponse.json();
+          const classes = classResult.classes || classResult.data || [];
+          
+          const classSelect = document.getElementById('user-class');
+          if (classSelect) {
+            classSelect.innerHTML = '<option value="">請選擇班級</option>';
+            classes.forEach(cls => {
+              classSelect.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
+            });
+          }
+        } else {
+          console.error('載入班級列表失敗:', classResponse?.status);
+        }
+      } catch (error) {
+        console.error('載入機構和班級選項失敗:', error);
+      }
+    }
+
+    /**
+     * 關閉使用者模態框
+     */
+    window.closeUserModal = function() {
+      document.getElementById('user-modal').classList.remove('show');
+      document.getElementById('user-form').reset();
+      currentEditingUserId = null;
+      
+      // 重置密碼欄位為必填
+      document.getElementById('user-password').required = true;
+    }
+
+    /**
+     * 儲存使用者
+     */
+    window.saveUser = async function() {
+      const form = document.getElementById('user-form');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const formData = {
+        username: document.getElementById('user-username').value.trim(),
+        full_name: document.getElementById('user-full-name').value.trim(),
+        email: document.getElementById('user-email').value.trim() || null,
+        phone: document.getElementById('user-phone').value.trim() || null,
+        role_name: document.getElementById('user-role').value,
+        organization_id: document.getElementById('user-organization').value || null,
+        is_active: document.getElementById('user-is-active').checked
+      };
+
+      // 只有在新建或密碼欄位有值時才傳送密碼
+      const password = document.getElementById('user-password').value.trim();
+      if (password || !currentEditingUserId) {
+        formData.password = password;
+      }
+
+      try {
+        let response;
+        let successMessage;
+
+        if (currentEditingUserId) {
+          // 更新使用者
+          response = await apiRequest(`/api/admin/users/${currentEditingUserId}`, {
+            method: 'PUT',
+            body: JSON.stringify(formData)
+          });
+          successMessage = '使用者資料已更新';
+        } else {
+          // 新建使用者
+          response = await apiRequest('/api/admin/users', {
+            method: 'POST',
+            body: JSON.stringify(formData)
+          });
+          successMessage = '使用者已建立';
+        }
+
+        if (response && response.ok) {
+          showAlert(successMessage, 'success');
+          closeUserModal();
+          loadUsers(currentUsersPage);
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '操作失敗');
+        }
+      } catch (error) {
+        console.error('儲存使用者錯誤:', error);
+        showAlert(error.message || '儲存使用者時發生錯誤', 'error');
+      }
+    }
+
+    /**
+     * 設置搜索和篩選
+     */
+    function setupUsersFilters() {
+      const searchInput = document.getElementById('user-search');
+      const roleFilter = document.getElementById('role-filter');
+      const statusFilter = document.getElementById('status-filter');
+
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(() => {
+          loadUsers(1);
+        }, 500));
+      }
+
+      if (roleFilter) {
+        roleFilter.addEventListener('change', () => {
+          loadUsers(1);
+        });
+      }
+
+      if (statusFilter) {
+        statusFilter.addEventListener('change', () => {
+          loadUsers(1);
+        });
+      }
+    }
+
+    /**
+     * 初始化使用者管理頁面
+     */
+    function initializeUsers() {
+      const contentArea = initializeNavigation('users', '使用者管理');
+      
+      contentArea.innerHTML = `
+        <div class="users-controls">
+          <div class="users-filters">
+            <input type="text" id="user-search" class="users-search" placeholder="搜尋使用者名稱、帳號或郵件...">
+            <select id="role-filter" class="users-filter-select">
+              <option value="">所有角色</option>
+              <option value="student">學生</option>
+              <option value="teacher">教師</option>
+              <option value="branch_admin">分校主任</option>
+              <option value="super_admin">系統管理員</option>
+            </select>
+            <select id="status-filter" class="users-filter-select">
+              <option value="">所有狀態</option>
+              <option value="true">啟用</option>
+              <option value="false">停用</option>
+            </select>
+          </div>
+          
+          <div class="users-actions">
+            <button class="btn btn-success" onclick="showBatchImportModal()">批量匯入</button>
+            <button class="btn btn-primary" onclick="showCreateUserModal()">新增使用者</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div id="users-table-container">
+              <div class="loading">
+                <div class="spinner"></div>
+                載入使用者列表中...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 創建/編輯使用者模態框 -->
+        <div id="user-modal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title" id="user-modal-title">新增使用者</h3>
+              <button class="modal-close" id="close-user-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+              <form id="user-form">
+                <div class="form-group">
+                  <label for="user-username">帳號 *</label>
+                  <input type="text" id="user-username" class="form-control" required maxlength="50">
+                  <small class="form-help">帳號將作為登入使用，建議使用英文和數字</small>
+                </div>
+                
+                <div class="form-group">
+                  <label for="user-password">密碼 *</label>
+                  <input type="password" id="user-password" class="form-control" required minlength="6">
+                  <small class="form-help">密碼至少需要6個字元</small>
+                </div>
+                
+                <div class="form-group">
+                  <label for="user-full-name">姓名 *</label>
+                  <input type="text" id="user-full-name" class="form-control" required maxlength="100">
+                </div>
+                
+                <div class="form-group">
+                  <label for="user-email">電子郵件</label>
+                  <input type="email" id="user-email" class="form-control" maxlength="255">
+                </div>
+                
+                <div class="form-group">
+                  <label for="user-phone">電話號碼</label>
+                  <input type="tel" id="user-phone" class="form-control" maxlength="20">
+                </div>
+                
+                <div class="form-group">
+                  <label for="user-role">角色 *</label>
+                  <select id="user-role" class="form-control" required>
+                    <option value="">請選擇角色</option>
+                    <option value="student">學生</option>
+                    <option value="teacher">教師</option>
+                    <option value="branch_admin">分校主任</option>
+                    <option value="admin">系統管理員</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="user-organization">所屬機構</label>
+                  <select id="user-organization" class="form-control">
+                    <option value="">請選擇機構</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="user-class">所屬班級</label>
+                  <select id="user-class" class="form-control">
+                    <option value="">請選擇班級</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="user-is-active" checked>
+                    <span class="checkmark"></span>
+                    啟用此使用者
+                  </label>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" id="cancel-user-btn">取消</button>
+              <button type="submit" class="btn btn-primary" id="save-user-btn" form="user-form">儲存</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 批量匯入使用者模態框 -->
+        <div id="batch-import-modal" class="modal">
+          <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+              <h3 class="modal-title">批量匯入使用者</h3>
+              <button class="modal-close" onclick="closeBatchImportModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <!-- 第一步：上傳檔案 -->
+              <div id="batch-import-step-1">
+                <h4 style="margin-bottom: 1rem;">第一步：上傳 CSV 檔案</h4>
+                <div class="form-group">
+                  <label for="csvFile">選擇 CSV 檔案</label>
+                  <input type="file" id="csvFile" class="form-control" accept=".csv" onchange="handleFileUpload(event)">
+                  <small style="color: var(--text-secondary); margin-top: 0.5rem; display: block;">
+                    支援格式：username, password, email, full_name, phone, role_name<br>
+                    檔案大小限制：1MB
+                  </small>
+                </div>
+                <div class="form-group">
+                  <button class="btn btn-secondary" onclick="downloadCSVTemplate()">下載範本檔案</button>
+                </div>
+              </div>
+              <!-- 第二步：預覽資料 -->
+              <div id="batch-import-step-2" style="display: none;">
+                <h4 style="margin-bottom: 1rem;">第二步：預覽匯入資料</h4>
+                <div id="preview-container" style="margin-bottom: 1rem; max-height: 300px; overflow-y: auto;">
+                  <table id="preview-table" class="users-table" style="font-size: var(--font-size-sm);">
+                    <thead>
+                      <tr>
+                        <th>序號</th>
+                        <th>帳號</th>
+                        <th>全名</th>
+                        <th>角色</th>
+                        <th>電子郵件</th>
+                        <th>電話</th>
+                        <th>狀態</th>
+                      </tr>
+                    </thead>
+                    <tbody id="preview-table-body">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <!-- 第三步：匯入結果 -->
+              <div id="batch-import-step-3" style="display: none;">
+                <h4 style="margin-bottom: 1rem;">第三步：匯入結果</h4>
+                <div id="import-results" style="margin-bottom: 1rem;"></div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" onclick="closeBatchImportModal()">關閉</button>
+              <button id="batch-back-button" class="btn btn-secondary" onclick="backToPreviousStep()" style="display: none;">上一步</button>
+              <button id="batch-preview-button" class="btn btn-primary" onclick="previewBatchUsers()" style="display: none;">預覽資料</button>
+              <button id="batch-import-button" class="btn btn-success" onclick="executeBatchImport()" style="display: none;">開始匯入</button>
+              <button id="batch-done-button" class="btn btn-primary" onclick="closeBatchImportModal()" style="display: none;">完成</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // 設置篩選器和載入數據
+      setupUsersFilters();
+      loadUsers(1);
+      
+      // 延遲設置模態框事件監聽器，確保 DOM 完全載入
+      setTimeout(() => {
+        setupModalEvents();
+      }, 100);
+    }
+
+    /**
+     * 設置模態框事件監聽器
+     */
+    function setupModalEvents() {
+      // 檢查元素是否存在，避免錯誤
+      const closeModalBtn = document.getElementById('close-user-modal');
+      const cancelBtn = document.getElementById('cancel-user-btn');
+      const saveBtn = document.getElementById('save-user-btn');
+      const modal = document.getElementById('user-modal');
+      const form = document.getElementById('user-form');
+      
+      if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeUserModal);
+      }
+      
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeUserModal);
+      }
+      
+      if (saveBtn) {
+        saveBtn.addEventListener('click', saveUser);
+      }
+      
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === this) {
+            closeUserModal();
+          }
+        });
+      }
+      
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          saveUser();
+        });
+      }
+    }
+
+    // 頁面載入完成後初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 檢查認證狀態
+      if (!isAuthenticated()) {
+        redirectToLogin();
+        return;
+      }
+      
+      setTimeout(initializeUsers, 100);
+    });
+  </script>
+
+</body>
+</html>
