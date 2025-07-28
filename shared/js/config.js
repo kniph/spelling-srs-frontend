@@ -3,7 +3,7 @@ const Config = {
     // API 基礎地址 - 根據環境自動切換
     API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://localhost:3000'  // 本地開發
-        : 'https://spelling-srs-backend.up.railway.app',  // 生產環境 (Railway)
+        : 'https://spelling-srs-backend-production.up.railway.app',  // 生產環境 (Railway)
     
     // 其他配置
     APP_NAME: 'SRS 學習系統',
